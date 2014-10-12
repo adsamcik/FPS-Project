@@ -19,4 +19,8 @@ FPS-Project is work name for First-person game that is aimed primarily on addons
 * Phases (WIP)
 
 #updates
+##α12-10-2014
+AI is now smarter and can use pathfinding to track down its enemies and
+on their way to the enemy they picked up a lot of mess so project is now
+cleaner and smaller.
 ##initial
