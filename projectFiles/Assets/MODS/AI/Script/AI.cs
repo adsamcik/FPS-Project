@@ -9,6 +9,7 @@ public class AI : MonoBehaviour {
         GameObject me;
         AI meAi;
         public GameObject gameObject;
+        public Transform transform;
         public bool inSight { get; private set; }
         public bool isAgressive { get; private set; }
         public bool isEnemy { get; private set; }
@@ -20,6 +21,7 @@ public class AI : MonoBehaviour {
             if (gameObject.CompareTag("Player")) isEnemy = (isFriendly) ? false : true;
             else isEnemy = (gameObject.GetComponent<AI>().isFriendly == isFriendly) ? false : true;
             this.gameObject = gameObject;
+            this.transform = gameObject.transform;
             s = gameObject.GetComponent<stats>();
             this.me = me;
             meAi = me.GetComponent<AI>();
@@ -65,21 +67,31 @@ public class AI : MonoBehaviour {
 
     [HideInInspector]
     public bool threatChanged;
+    NavMeshAgent agent;
 
     bool canShoot;
 
     void Start() {
         canShoot = (gameObject.GetComponent<weaponController>()) ? true : false;
         StartCoroutine("threatUpdate");
+        agent = GetComponent<NavMeshAgent>();
     }
 
     void Update()
     {
-        if (!checkThreats()) return ;    
-        
-        if (threats[0].threatValue > 550 && canShoot)
+        if (!checkThreats()) return ;
+
+        if (threats[0].inSight)
         {
-            if (threats[0].inSight) GetComponent<weaponController>().Shoot();
+            if (agent.hasPath) agent.Stop();
+            if (canShoot && threats[0].threatValue > 550)
+            {
+                rigidbody.MoveRotation(Quaternion.Euler(new Vector3(0, threats[0].transform.position.y, 0)));
+                GetComponent<weaponController>().Shoot();
+            }
+        }
+        else if(threats[0].threatValue > 50){
+            agent.SetDestination(threats[0].transform.position);
         }
     }
 

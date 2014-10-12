@@ -15,12 +15,12 @@ public class weaponController : MonoBehaviour {
         public int MagLeft;
         public int BulLeft;
 
-        public bool usesBullet; //Uses physical bullets? (more performance required)
+        public bool physicalBullet; //Uses physical bullets? (more performance required)
         public GameObject bullet; //Required only if usesBullet is true
         public DamageType damageType;
 
         public Weapon() {
-            if(usesBullet && bullet == null) bullet = (GameObject)Resources.Load("Bullet");
+            if(physicalBullet && bullet == null) bullet = (GameObject)Resources.Load("Bullet");
         } 
     }
 
@@ -59,7 +59,7 @@ public class weaponController : MonoBehaviour {
 
     void ChangeWeapon(int id) { 
         cW = id;
-        if (weapons[cW].usesBullet) fire = physicalBullet; else fire = bullet;
+        if (weapons[cW].physicalBullet) fire = physicalBullet; else fire = bullet;
     }
 	
 	void Update () {
@@ -99,7 +99,8 @@ public class weaponController : MonoBehaviour {
 
     void bullet() {
         RaycastHit hit;
-        Vector3 position = transform.position + gunHead;
+        Vector3 position = transform.position;
+        //Vector3 position = transform.position + transform.forward; Currently causes issues with raycast due to raycast ignore
         Debug.DrawRay(position, getAimPoint() - position);
         Vector3 direction = getAimPoint() - position;
 
@@ -110,10 +111,9 @@ public class weaponController : MonoBehaviour {
 
         int layerToIgnore = 1 << gameObject.layer;
         layerToIgnore = ~layerToIgnore;
-
         if (Physics.Raycast(position, direction, out hit, 100, layerToIgnore) && (hit.collider.CompareTag("Player") || hit.collider.CompareTag("AI"))) hit.transform.GetComponent<stats>().dealDamage(weapons[cW].damageType, gameObject);
-
         gameObject.layer = oldLayer;
+        Debug.Log(hit.collider);
     }
 
 
