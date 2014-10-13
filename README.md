@@ -13,7 +13,8 @@ FPS-Project is work name for First-person game that is aimed primarily on addons
   * Physical/Raycast bullets
   * Should be usable on any type of weapon (including melee soon) 
 * AI
-  * Movement (Planned)
+  * Movement
+  * Behaviors (in next update)
   * Shooting
   * Thinking
 * Phases (WIP)
