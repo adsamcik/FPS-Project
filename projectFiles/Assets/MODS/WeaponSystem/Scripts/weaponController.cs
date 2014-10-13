@@ -92,7 +92,7 @@ public class weaponController : MonoBehaviour {
 
     void physicalBullet() {
         Vector3 aimTo;
-        GameObject b = (GameObject)Instantiate(weapons[cW].bullet, transform.position + gunHead, Quaternion.LookRotation(aimTo = getAimPoint() - transform.position));
+        GameObject b = (GameObject)Instantiate(weapons[cW].bullet, transform.position + transform.forward, Quaternion.LookRotation(aimTo = getAimPoint() - transform.position));
         b.rigidbody.AddForce(aimTo.normalized * weapons[cW].speed);
         b.GetComponent<bulletScript>().damager = gameObject;
     }

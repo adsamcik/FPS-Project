@@ -8,6 +8,11 @@ public class Checkpoint : MonoBehaviour {
 
     float maxLight;
 
+    ParticleSystem.Particle[] ParticleList;
+    Vector3 target;
+    float fade;
+    bool slow;
+
     void Start() {
         collider.enabled = false;
         RespawnLocation = transform.Find("Respawn").position;
@@ -29,8 +34,12 @@ public class Checkpoint : MonoBehaviour {
             collider.enabled = false;
             if (particleSystem) particleSystem.enableEmission = false;
             StartCoroutine("FadeLight");
+            StartCoroutine("ParticleAnimation",other.gameObject);
         }
     }
+
+
+
 
     IEnumerator FadeLight()
     {
@@ -57,4 +66,28 @@ public class Checkpoint : MonoBehaviour {
         }
 
     }
+
+    IEnumerator ParticleAnimation(GameObject target)
+    {
+        fade = 0;
+        ParticleList = new ParticleSystem.Particle[particleSystem.particleCount - 1];
+        while (fade != 1)
+        {
+            particleSystem.GetParticles(ParticleList);
+            fade = ((fade + Time.deltaTime) > 1) ? fade = 1f : fade += Time.deltaTime/(particleSystem.startLifetime/2);
+            for (int i = 0; i < ParticleList.Length; ++i)
+            {
+                ParticleList[i].velocity = -(new Vector3(target.transform.position.x - ParticleList[i].position.x, ParticleList[i].velocity.y, target.transform.position.z - ParticleList[i].position.z));
+                ParticleList[i].lifetime -= 2*Time.deltaTime;
+            }
+
+            particleSystem.SetParticles(ParticleList, particleSystem.particleCount);
+            yield return new WaitForEndOfFrame();
+
+        }
+
+        ParticleList = null;
+        particleSystem.SetParticles(ParticleList, 0);
+    }
+
 }

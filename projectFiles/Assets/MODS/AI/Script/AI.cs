@@ -3,107 +3,148 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class AI : MonoBehaviour {
-    //Threat object
-    [System.Serializable]
-    public class Threat {
-        GameObject me;
-        AI meAi;
-        public GameObject gameObject;
-        public Transform transform;
-        public bool inSight { get; private set; }
-        public bool isAgressive { get; private set; }
-        public bool isEnemy { get; private set; }
-        public int threatValue { get; private set; }
-        public Vector3 lastSeen { get; private set; }
-        stats s;
-
-        public Threat(GameObject gameObject, bool isFriendly, GameObject me) {
-            if (gameObject.CompareTag("Player")) isEnemy = (isFriendly) ? false : true;
-            else isEnemy = (gameObject.GetComponent<AI>().isFriendly == isFriendly) ? false : true;
-            this.gameObject = gameObject;
-            this.transform = gameObject.transform;
-            s = gameObject.GetComponent<stats>();
-            this.me = me;
-            meAi = me.GetComponent<AI>();
-            CheckSight();
-        }
-
-        public int estimateThreat()
-        {
-            int prevThreat = threatValue;
-            CheckSight();
-            //isAgressive = (ps.publicStats.shotLately) ? true : false;
-            threatValue = s.publicStats.threatValue;
-            threatValue += (inSight) ? 500 : 0;
-            threatValue += (isAgressive) ? 100 : 0;
-            threatValue += (isEnemy) ? 100 : 0;
-            if (prevThreat != threatValue) meAi.threatChanged = true;
-            //Debug.Log(threatValue);
-            return threatValue;
-        }
-
-        public void setAgressive() {
-            isAgressive = true;
-        }
-
-        public bool CheckSight() {
-            RaycastHit hit;
-            if (Physics.Raycast(me.transform.position, gameObject.transform.position - me.transform.position, out hit))
-            {
-                if (hit.collider.CompareTag(gameObject.tag)) inSight = true;
-                else {
-                    if (inSight) lastSeen = gameObject.transform.position;
-                    inSight = false;
-                }
-            }
-            else inSight = false;
-            return inSight;
-        }
-    }
-
-
     public bool isFriendly = false;
     public List<Threat> threats = new List<Threat>();
 
     [HideInInspector]
     public bool threatChanged;
+
     NavMeshAgent agent;
+
+    public delegate void BehaviorSwitch();
+    BehaviorSwitch activeBehavior;
 
     bool canShoot;
 
-    void Start() {
-        canShoot = (gameObject.GetComponent<weaponController>()) ? true : false;
+    float distanceWalked;
+    Vector3 prevPosition;
+    
+
+    void Start()
+    {
         StartCoroutine("threatUpdate");
+        canShoot = (gameObject.GetComponent<weaponController>()) ? true : false;
         agent = GetComponent<NavMeshAgent>();
+        activeBehavior = Idle;
     }
 
     void Update()
     {
-        if (!checkThreats()) return ;
+        activeBehavior();
+    }
+
+    public void changeBehavior(behavior b)
+    {
+        switch ((int)b)
+        {
+            case 0:
+                activeBehavior = Idle;
+                break;
+            case 1:
+                activeBehavior = Attack;
+                break;
+            case 2:
+                activeBehavior = Inquire;
+                break;
+
+        }
+
+    }
+
+    public void Idle()
+    {
+        if (threats[0].inSight && threats[0].threatValue > 600) activeBehavior = Attack;
+    }
+
+    public void Attack()
+    {
+        if (!checkThreats()) return;
 
         if (threats[0].inSight)
         {
-            if (agent.hasPath) agent.Stop();
-            if (canShoot && threats[0].threatValue > 550)
+            if (canShoot && threats[0].threatValue > 600)
             {
                 rigidbody.MoveRotation(Quaternion.Euler(new Vector3(0, threats[0].transform.position.y, 0)));
                 GetComponent<weaponController>().Shoot();
             }
         }
-        else if(threats[0].threatValue > 50){
-            agent.SetDestination(threats[0].transform.position);
+        else {
+            activeBehavior = Inquire;
         }
     }
 
-    bool checkThreats() {
+    public void Aware()
+    {
+
+    }
+
+    void Inquire()
+    {
+        if (!agent.hasPath) agent.SetDestination(threats[0].lastSeen);
+        if ((transform.position - threats[0].lastSeen).sqrMagnitude < 2) { activeBehavior = InquireWait; distanceWalked = 0; }
+    }
+
+    void InquireAround() {
+        RaycastHit[] hitArray = RayCastAround(180, 8, 5);
+        if (hitArray.Length > 0)
+        {
+            agent.SetDestination(hitArray[Random.Range(0, hitArray.Length)].point);
+        }
+    }
+
+    void InquireWait() {
+        if (agent.remainingDistance < 1) InquireAround();
+        else if (distanceWalked > 100) activeBehavior = Idle;
+
+        distanceWalked += (transform.position - prevPosition).magnitude;
+        prevPosition = transform.position;
+    }
+
+    RaycastHit[] RayCastAround(float degrees, int count, float threshold = 0)
+    {
+        bool thEnabled = (threshold > 0) ? true : false;
+        List<RaycastHit> hitList = new List<RaycastHit>();
+
+        for (int i = 0; i < count+1; i++)
+        {
+            float rad = (((degrees / count) * i) - transform.rotation.eulerAngles.y) * Mathf.Deg2Rad;
+            RaycastHit hit;
+            Debug.DrawRay(transform.position, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)), Color.red, 0.5f);
+            Ray ray = new Ray(transform.position, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)));
+            if (Physics.Raycast(ray, out hit, threshold + 50))
+            {
+                if (thEnabled) { if (hit.distance > threshold) hitList.Add(hit); }
+                else hitList.Add(hit);
+            }
+            else
+            {
+                hit.point = ray.GetPoint(threshold);
+                hitList.Add(hit);
+            }
+        }
+
+        return hitList.ToArray();
+    }
+
+    public enum behavior
+    {
+        Idle = 0,
+        Attack = 1,
+        Inquire = 2,
+        Patrol = 3,
+        Flee = 4,
+        Help = 5,
+        Follow = 6,
+        Seek = 7,
+        Defend = 8,
+        Dead = 9
+    }
+
+    public bool checkThreats() {
         bool isOk = true;
         if (threats[0].gameObject == null) { threats.RemoveAt(0); isOk = checkThreats(); }
         if (!isOk || threats.Count == 0) return false;
         return true;
-    }
-
-    void Move() {
-        rigidbody.AddForce((threats[0].gameObject.transform.position - transform.position) * Time.deltaTime,ForceMode.VelocityChange);
     }
 
     IEnumerator threatUpdate()
@@ -114,6 +155,7 @@ public class AI : MonoBehaviour {
             {
                 if (!threats[i].gameObject) threats.RemoveAt(i);
                 else threats[i].estimateThreat();
+                yield return new WaitForEndOfFrame();
             }
             orderThreats();
             yield return new WaitForSeconds(0.250f);
@@ -134,10 +176,10 @@ public class AI : MonoBehaviour {
         if (!other.isTrigger && (other.CompareTag("Player") || other.CompareTag("AI")))
         {
             if (!other.GetComponent<stats>()) { Debug.LogError("Object does not contain required component PlayerStats! Aborting."); return; }
+            foreach (Threat go in threats) if (go.gameObject == other.gameObject) return;
             threats.Add(new Threat(other.gameObject, isFriendly, gameObject));
         }
     }
-
 
 
     //other functions
@@ -175,61 +217,67 @@ public class AI : MonoBehaviour {
         threatChanged = false;
     }
 
-    /** 
- * Razeni slevanim (od nejvyssiho)
- * @param array pole k serazeni
- * @param aux pomocne pole stejne delky jako array
- * @param left prvni index na ktery se smi sahnout
- * @param right posledni index, na ktery se smi sahnout
- */
-    public void MergeSort(Threat[] array, Threat[] aux, int left, int right)
-    {
-        if (left == right) return;
-        int middleIndex = (left + right) / 2;
-        MergeSort(array, aux, left, middleIndex);
-        MergeSort(array, aux, middleIndex + 1, right);
-        Merge(array, aux, left, right);
 
-        for (int i = left; i <= right; i++)
+    //Threat object
+    [System.Serializable]
+    public class Threat
+    {
+        GameObject me;
+        AI meAi;
+        public GameObject gameObject;
+        public Transform transform;
+        public bool inSight { get; private set; }
+        public bool isAgressive { get; private set; }
+        public bool isEnemy { get; private set; }
+        public int threatValue { get; private set; }
+        public Vector3 lastSeen { get; private set; }
+        stats s;
+
+        public Threat(GameObject gameObject, bool isFriendly, GameObject me)
         {
-            array[i] = aux[i];
+            if (gameObject.CompareTag("Player")) isEnemy = (isFriendly) ? false : true;
+            else isEnemy = (gameObject.GetComponent<AI>().isFriendly == isFriendly) ? false : true;
+            this.gameObject = gameObject;
+            this.transform = gameObject.transform;
+            s = gameObject.GetComponent<stats>();
+            this.me = me;
+            meAi = me.GetComponent<AI>();
+            CheckSight();
+        }
+
+        public int estimateThreat()
+        {
+            int prevThreat = threatValue;
+            CheckSight();
+            threatValue = s.publicStats.threatValue;
+            threatValue += (inSight) ? 500 : 0;
+            float distance = (transform.position - me.transform.position).magnitude;
+            threatValue += (distance < 30) ? (30 - (int)distance) * 2 : 0;
+            threatValue += (isAgressive) ? 100 : 0;
+            threatValue += (isEnemy) ? 100 : 0;
+            if (prevThreat != threatValue) meAi.threatChanged = true;
+            return threatValue;
+        }
+
+        public void setAgressive()
+        {
+            isAgressive = true;
+        }
+
+        public bool CheckSight()
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(me.transform.position, gameObject.transform.position - me.transform.position, out hit))
+            {
+                if (hit.collider.CompareTag(gameObject.tag)) inSight = true;
+                else
+                {
+                    if (inSight) lastSeen = gameObject.transform.position;
+                    inSight = false;
+                }
+            }
+            else inSight = false;
+            return inSight;
         }
     }
-
-    /**
-     * Slevani pro Merge sort 
-     * @param array pole k serazeni
-     * @param aux pomocne pole (stejne velikosti jako razene)
-     * @param left prvni index, na ktery smim sahnout
-     * @param right posledni index, na ktery smim sahnout
-     */
-    private void Merge(Threat[] array, Threat[] aux, int left, int right)
-    {
-        int middleIndex = (left + right) / 2;
-        int leftIndex = left;
-        int rightIndex = middleIndex + 1;
-        int auxIndex = left;
-        while (leftIndex <= middleIndex && rightIndex <= right)
-        {
-            if (array[leftIndex].threatValue >= array[rightIndex].threatValue)
-            {
-                aux[auxIndex] = array[leftIndex++];
-            }
-            else
-            {
-                aux[auxIndex] = array[rightIndex++];
-            }
-            auxIndex++;
-        }
-        while (leftIndex <= middleIndex)
-        {
-            aux[auxIndex] = array[leftIndex++];
-            auxIndex++;
-        }
-        while (rightIndex <= right)
-        {
-            aux[auxIndex] = array[rightIndex++];
-            auxIndex++;
-        }
-    } 
 }
