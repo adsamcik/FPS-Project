@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(stats))]
 public class AI : MonoBehaviour {
     public bool isFriendly = false;
     public List<Threat> threats = new List<Threat>();
@@ -31,24 +33,7 @@ public class AI : MonoBehaviour {
     void Update()
     {
         activeBehavior();
-    }
-
-    public void changeBehavior(behavior b)
-    {
-        switch ((int)b)
-        {
-            case 0:
-                activeBehavior = Idle;
-                break;
-            case 1:
-                activeBehavior = Attack;
-                break;
-            case 2:
-                activeBehavior = Inquire;
-                break;
-
-        }
-
+        Debug.Log(activeBehavior.Method);
     }
 
     public void Idle()
@@ -65,7 +50,7 @@ public class AI : MonoBehaviour {
             if (canShoot && threats[0].threatValue > 600)
             {
                 rigidbody.MoveRotation(Quaternion.Euler(new Vector3(0, threats[0].transform.position.y, 0)));
-                GetComponent<weaponController>().Shoot();
+                GetComponent<weaponController>().CurrentWeaponAttack();
             }
         }
         else {
@@ -80,8 +65,9 @@ public class AI : MonoBehaviour {
 
     void Inquire()
     {
-        if (!agent.hasPath) agent.SetDestination(threats[0].lastSeen);
-        if ((transform.position - threats[0].lastSeen).sqrMagnitude < 2) { activeBehavior = InquireWait; distanceWalked = 0; }
+        agent.SetDestination(threats[0].lastSeen); 
+        activeBehavior = InquireWait; 
+        distanceWalked = 0;
     }
 
     void InquireAround() {
@@ -90,11 +76,13 @@ public class AI : MonoBehaviour {
         {
             agent.SetDestination(hitArray[Random.Range(0, hitArray.Length)].point);
         }
+        else activeBehavior = Idle;
     }
 
     void InquireWait() {
-        if (agent.remainingDistance < 1) InquireAround();
-        else if (distanceWalked > 100) activeBehavior = Idle;
+        if (threats[0].inSight) { activeBehavior = Attack; agent.Stop(false); }
+        else if (agent.remainingDistance < 1) InquireAround();
+        else if (distanceWalked > 50) activeBehavior = Idle;
 
         distanceWalked += (transform.position - prevPosition).magnitude;
         prevPosition = transform.position;
@@ -109,8 +97,8 @@ public class AI : MonoBehaviour {
         {
             float rad = (((degrees / count) * i) - transform.rotation.eulerAngles.y) * Mathf.Deg2Rad;
             RaycastHit hit;
-            Debug.DrawRay(transform.position, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)), Color.red, 0.5f);
-            Ray ray = new Ray(transform.position, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)));
+            Debug.DrawRay(transform.position + transform.up, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)), Color.red, 0.5f);
+            Ray ray = new Ray(transform.position+transform.up, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)));
             if (Physics.Raycast(ray, out hit, threshold + 50))
             {
                 if (thEnabled) { if (hit.distance > threshold) hitList.Add(hit); }
@@ -222,9 +210,12 @@ public class AI : MonoBehaviour {
     [System.Serializable]
     public class Threat
     {
+        [HideInInspector]
         GameObject me;
+        [HideInInspector]
         AI meAi;
         public GameObject gameObject;
+        [HideInInspector]
         public Transform transform;
         public bool inSight { get; private set; }
         public bool isAgressive { get; private set; }

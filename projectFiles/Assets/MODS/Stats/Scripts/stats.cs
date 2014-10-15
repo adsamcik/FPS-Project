@@ -233,7 +233,6 @@ public class stats : MonoBehaviour
 
         Armor -= (Armor < armorCost) ? Armor : armorCost;
         if (ArmorBar != null) ArmorBar.rectTransform.localScale = new Vector3((float)Armor / 100, 1, 1);
-        Debug.Log(ArmorBar);
 
         return Base;
     }

@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
+public delegate void voidSwitch();
 public static class API {
     public static void SetBool(string name, bool booleanValue)
     {
@@ -65,4 +67,21 @@ public enum Phase
     Red = 0,
     Green = 1,
     Blue = 2
+}
+
+[System.Serializable]
+public class CapacityOf {
+    public int cur;
+    public int max;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="cur">current</param>
+    /// <param name="max">max</param>
+    public CapacityOf(int cur, int max) {
+        if (cur > max) { Debug.LogWarning("You can't have more than max!"); cur = max; }
+        this.cur = cur;
+        this.max = max;
+    }
 }

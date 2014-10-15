@@ -56,6 +56,7 @@
     <Compile Include="Assets\CORE\Scripts\rotate.cs" />
     <Compile Include="Assets\MODS\AI\Script\AI.cs" />
     <Compile Include="Assets\MODS\AI\Script\Dummy.cs" />
+    <Compile Include="Assets\MODS\AI\Script\debugAI_Instantiate.cs" />
     <Compile Include="Assets\MODS\Checkpoints\Checkpoint.cs" />
     <Compile Include="Assets\MODS\Checkpoints\CheckpointSystem.cs" />
     <Compile Include="Assets\MODS\Checkpoints\Scripts\RunGame.cs" />
@@ -65,6 +66,8 @@
     <Compile Include="Assets\MODS\Stats\Scripts\ArmorPickup.cs" />
     <Compile Include="Assets\MODS\Stats\Scripts\stats.cs" />
     <Compile Include="Assets\MODS\WeaponSystem\Scripts\bulletScript.cs" />
+    <Compile Include="Assets\MODS\WeaponSystem\Scripts\melee.cs" />
+    <Compile Include="Assets\MODS\WeaponSystem\Scripts\ranged.cs" />
     <Compile Include="Assets\MODS\WeaponSystem\Scripts\weaponController.cs" />
     <Compile Include="Assets\SampleAssets\Cameras\Scripts\AbstractTargetFollower.cs" />
     <Compile Include="Assets\SampleAssets\Cameras\Scripts\AutoCam.cs" />
