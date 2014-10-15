@@ -9,6 +9,7 @@ FPS-Project is work name for First-person game that is aimed primarily on addons
   * Climbing
   * Jumping over obstacles (tbd)
   * Stats (health, armor threat) (script can be used on AI/Player)
+  * Checkpoints (and support for timed runs)
 * Weapon system (script can be used on AI/Player)
   * Physical/Raycast bullets
   * Should be usable on any type of weapon (including melee soon) 
@@ -16,7 +17,7 @@ FPS-Project is work name for First-person game that is aimed primarily on addons
   * Movement (using navmesh pathfinding)
   * Threats
   * Behaviors
-    * Idle (WIP)
+    * Idle
     * Attack (WIP)
       * Ranged
       * Melee (tbd)
@@ -29,10 +30,13 @@ FPS-Project is work name for First-person game that is aimed primarily on addons
     * Defend (tbd)
     * Dead (tbd)
 * Phases (WIP)
+* Dynamic level generation (tbd)
 
 #updates
+##α15-10-2014
+One step closer to better weapons. The new system allows very easy creation of new weapons and adds support for melee weapons a possibly other weapon types in the future. It will also feature in next update dropping active weapon upon death. It still needs to be tuned but player can shoot (once again) already and believe, he's happy.
 ##α13-10-2014
-added beginning to behaviors and also checkpoint trigger particle animation is added to make it look more the way AIs like it. They are really dumb for now so don't blame them if you don't like it.
+Added beginning to behaviors and also checkpoint trigger particle animation is added to make it look more the way AIs like it. They are really dumb for now so don't blame them if you don't like it.
 ##α12-10-2014
 AI is now smarter and can use pathfinding to track down its enemies and
 on their way to the enemy they picked up a lot of mess so project is now
