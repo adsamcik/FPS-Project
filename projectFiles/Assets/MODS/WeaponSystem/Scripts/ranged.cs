@@ -1,66 +1,56 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class ranged : Weapon
 {
+    bool dropped;
     public float speed = 1000;
 
-    public float ReloadSpeed = 1;
+    public float ReloadTime = 1;
+    /// <summary>
+    /// rounds per second
+    /// </summary>
     public float RateOfFire = 3f;
 
     public CapacityOf magazine = new CapacityOf(8, 8);
-    public CapacityOf bullets = new CapacityOf(8, 32);
+    public CapacityOf bullets = new CapacityOf(8, 64);
 
     public bool physicalBullet; //Uses physical bullets? (more performance required)
     public GameObject bullet; //Required only if usesBullet is true
+
     voidSwitch bulletFunction;
 
-    bool Reloading;
+    Text ammoText;
 
-    //public ranged(GameObject go)
-    //{
-    //    gameObject = go;
-    //    transform = go.transform;
-    //    wC = go.GetComponent<weaponController>();
-    //    if (physicalBullet && bullet == null) bullet = (GameObject)Resources.Load("Bullet");
-    //    Transform gunHeadObject = transform.Find("Head Joint/First Person Camera/Gun/GunHead");
-    //    hitPoint = (gunHeadObject != null) ? gunHeadObject.localPosition : transform.forward;
-
-    //    if (physicalBullet) bulletFunction = PhysicalBulletAttack; else bulletFunction = BulletAttack;
-    //}
-
-    //public ranged(GameObject go, GameObject bullet, CapacityOf magazine, CapacityOf bullets, float speed, float rateOfFire, float reloadSpeed, string name = "ranged")
-    //{
-    //    gameObject = go;
-    //    transform = go.transform;
-    //    wC = go.GetComponent<weaponController>();
-
-    //    this.bullets = bullets;
-    //    this.magazine = magazine;
-
-    //    if (physicalBullet && bullet == null) bullet = (GameObject)Resources.Load("Bullet");
-    //    Transform gunHeadObject = transform.Find("Head Joint/First Person Camera/Gun/GunHead");
-    //    hitPoint = (gunHeadObject != null) ? gunHeadObject.localPosition : transform.forward;
-
-    //    if (physicalBullet) bulletFunction = PhysicalBulletAttack; else bulletFunction = BulletAttack;
-    //}
-
-    void Start()
+    override protected void Start()
     {
-        transform = GetComponent<Transform>();
+        base.Start();
+
         if (physicalBullet) bulletFunction = PhysicalBulletAttack; else bulletFunction = BulletAttack;
-        wC = transform.parent.parent.GetComponent<weaponController>();
+        try
+        {
+            wC = transform.parent.parent.GetComponent<weaponController>();
+        }
+        catch
+        {
+            Drop();
+        }
+
+        ammoText = GameObject.Find("--HUD/Ammo/ammoText").GetComponent<Text>();
+        if (wC) DisplayAmmo();
     }
 
     public override void Attack()
     {
-        if (CheckBullets()) bulletFunction();
-
+        if (Break > 0) return;
+        if (!wC.isPlayer && magazine.cur == 0) RAction();
+        else if (CheckBullets()) bulletFunction();
+        DisplayAmmo();
     }
 
     bool CheckBullets()
     {
-        if (Reloading || Break > 0) return false;
         if (magazine.cur == 0)
         {
             if (bullets.cur == 0) wC.displaytext("Out of Ammo");
@@ -70,7 +60,7 @@ public class ranged : Weapon
 
         Break = 1 / RateOfFire;
         magazine.cur--;
-
+        DisplayAmmo();
         return true;
     }
 
@@ -80,34 +70,28 @@ public class ranged : Weapon
 
     }
 
+    void DisplayAmmo() {
+        if (wC.isPlayer) ammoText.text = magazine.cur + "/" + (bullets.cur + magazine.cur);
+    }
+
     public override void RAction()
     {
+        if (Break > 0) return;
         if (bullets.cur > 0 && magazine.cur != magazine.max)
         {
-            Break = ReloadSpeed;
+            Break = ReloadTime;
+            Debug.Log(Break);
             int bNeed = magazine.max - magazine.cur;
             magazine.cur += (bullets.cur - bNeed > 0) ? bNeed : bNeed = bullets.cur;
             bullets.cur -= bNeed;
-            //if (bullets.x < 8) displaytext("Last Magazine");
+            DisplayAmmo();
         }
-    }
-
-    IEnumerator Reload()
-    {
-        wC.displaytext("Reloading");
-        Reloading = true;
-        yield return new WaitForSeconds(ReloadSpeed);
-        Reloading = false;
-        int bNeed = magazine.max - magazine.cur;
-        magazine.cur += (bullets.cur - bNeed > 0) ? bNeed : bNeed = bullets.cur;
-        bullets.cur -= bNeed;
-        if (bullets.cur < 8) wC.displaytext("Last Magazine");
     }
 
     void PhysicalBulletAttack()
     {
         Vector3 aimTo;
-        GameObject b = (GameObject)Instantiate(bullet, transform.position + transform.forward, Quaternion.LookRotation(aimTo = wC.getAimPoint() - transform.position));
+        GameObject b = (GameObject)Instantiate(bullet, transform.position, Quaternion.LookRotation(aimTo = wC.getAimPoint() - transform.position));
         b.rigidbody.AddForce(aimTo.normalized * speed);
         b.GetComponent<bulletScript>().damager = gameObject;
     }

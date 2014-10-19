@@ -3,8 +3,8 @@
 --- !u!78 &1
 TagManager:
   tags:
-  - Item
-  - Dangerous
+  - Environment
+  - 
   - Smelly
   - Fire
   - 
@@ -43,7 +43,7 @@ TagManager:
   User Layer 28: 
   User Layer 29: 
   User Layer 30: 
-  User Layer 31: 
+  User Layer 31: Environment
   m_SortingLayers:
   - name: Default
     userID: 0

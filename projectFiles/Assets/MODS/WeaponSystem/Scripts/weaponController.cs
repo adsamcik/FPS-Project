@@ -7,7 +7,7 @@ public class weaponController : MonoBehaviour
 {
     List<WeaponInfo> weapons = new List<WeaponInfo>();
 
-    bool isPlayer;
+    public bool isPlayer {get; private set;}
     bool WeaponHidden;
 
     int cW; //Current weapon
@@ -17,7 +17,7 @@ public class weaponController : MonoBehaviour
     public delegate Vector3 vectorSwitch();
     public vectorSwitch getAimPoint;
 
-    void Start()
+    void Awake()
     {
         GameObject Weapons;
         Transform checkChild;
@@ -50,10 +50,17 @@ public class weaponController : MonoBehaviour
         ChangeWeapon(0);
     }
 
+    public void newWeapon(GameObject w) {
+        if (w.transform.parent == transform) {
+            weapons.Add(new WeaponInfo(w));
+            w.transform.parent = transform.FindChild("weapons");
+            w.transform.localPosition = Vector3.zero;
+        }
+    }
 
     void ChangeWeapon(int id)
     {
-        cW = id;
+        if(id < weapons.Count) cW = id;
     }
 
     void Update()
@@ -143,10 +150,42 @@ public class Weapon : MonoBehaviour
 
     public string name = "Weapon";
     public DamageType damageType;
+    protected float weaponRange = -1;
 
     protected float Break;
 
-    public void Update()
+    protected virtual void Start()
+    {
+        transform = GetComponent<Transform>();
+        gameObject = transform.gameObject;
+
+        transform.localPosition = Vector3.forward;
+        gameObject.name = name;
+    }
+
+    protected void OnTriggerEnter(Collider other)
+    {
+        if (!other.isTrigger && (other.CompareTag("Player") || other.CompareTag("AI")))
+        {
+            transform.parent = other.transform;
+            wC = transform.parent.GetComponent<weaponController>();
+            wC.newWeapon(gameObject);
+            Destroy(GetComponent<BoxCollider>());
+            GetComponent<Text>().text = "";
+        }
+    }
+
+    public void Drop()
+    {
+        //gameObject.AddComponent<Rigidbody>();
+        BoxCollider b = gameObject.AddComponent<BoxCollider>();
+        RectTransform rt = GetComponent<RectTransform>();
+        b.size = new Vector3(rt.sizeDelta.x, 1, rt.sizeDelta.y);
+        b.isTrigger = true;
+        GetComponent<Text>().text = name;
+    }
+
+    public virtual void Update()
     {
         Break -= (Break > 0) ? Time.deltaTime : 0;
     }

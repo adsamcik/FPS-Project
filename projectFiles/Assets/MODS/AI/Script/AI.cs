@@ -18,12 +18,15 @@ public class AI : MonoBehaviour {
 
     bool canShoot;
 
-    float distanceWalked;
-    Vector3 prevPosition;
-    
+
+    //Behaviors
+    public Inquire inquire;
 
     void Start()
     {
+        //Initialize behaviors
+        inquire = new Inquire(this);
+
         StartCoroutine("threatUpdate");
         canShoot = (gameObject.GetComponent<weaponController>()) ? true : false;
         agent = GetComponent<NavMeshAgent>();
@@ -49,12 +52,13 @@ public class AI : MonoBehaviour {
         {
             if (canShoot && threats[0].threatValue > 600)
             {
-                rigidbody.MoveRotation(Quaternion.Euler(new Vector3(0, threats[0].transform.position.y, 0)));
+                transform.LookAt(new Vector3(threats[0].transform.position.x, transform.position.y, threats[0].transform.position.y));
+                //rigidbody.MoveRotation(Quaternion.Euler(new Vector3(0, threats[0].transform.position.y, 0)));
                 GetComponent<weaponController>().CurrentWeaponAttack();
             }
         }
         else {
-            activeBehavior = Inquire;
+            activeBehavior = inquire.InitialPhase;
         }
     }
 
@@ -63,56 +67,8 @@ public class AI : MonoBehaviour {
 
     }
 
-    void Inquire()
-    {
-        agent.SetDestination(threats[0].lastSeen); 
-        activeBehavior = InquireWait; 
-        distanceWalked = 0;
-    }
-
-    void InquireAround() {
-        RaycastHit[] hitArray = RayCastAround(180, 8, 5);
-        if (hitArray.Length > 0)
-        {
-            agent.SetDestination(hitArray[Random.Range(0, hitArray.Length)].point);
-        }
-        else activeBehavior = Idle;
-    }
-
-    void InquireWait() {
-        if (threats[0].inSight) { activeBehavior = Attack; agent.Stop(false); }
-        else if (agent.remainingDistance < 1) InquireAround();
-        else if (distanceWalked > 50) activeBehavior = Idle;
-
-        distanceWalked += (transform.position - prevPosition).magnitude;
-        prevPosition = transform.position;
-    }
-
-    RaycastHit[] RayCastAround(float degrees, int count, float threshold = 0)
-    {
-        bool thEnabled = (threshold > 0) ? true : false;
-        List<RaycastHit> hitList = new List<RaycastHit>();
-
-        for (int i = 0; i < count+1; i++)
-        {
-            float rad = (((degrees / count) * i) - transform.rotation.eulerAngles.y) * Mathf.Deg2Rad;
-            RaycastHit hit;
-            Debug.DrawRay(transform.position + transform.up, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)), Color.red, 0.5f);
-            Ray ray = new Ray(transform.position+transform.up, new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)));
-            if (Physics.Raycast(ray, out hit, threshold + 50))
-            {
-                if (thEnabled) { if (hit.distance > threshold) hitList.Add(hit); }
-                else hitList.Add(hit);
-            }
-            else
-            {
-                hit.point = ray.GetPoint(threshold);
-                hitList.Add(hit);
-            }
-        }
-
-        return hitList.ToArray();
-    }
+    
+    
 
     public enum behavior
     {
@@ -205,6 +161,162 @@ public class AI : MonoBehaviour {
         threatChanged = false;
     }
 
+    public class AIpath {
+        public Vector3 to;
+        public Vector3[] colliders;
+
+    }
+
+    //[System.Serializable]
+    public class Inquire {
+        AI ai;
+        Transform transform;
+
+        float distanceWalked;
+        Vector3 prevPosition;
+
+        List<Vector3> checkedPositions;
+        int posCount;
+
+        int layerMask = 1<<31;
+
+        public Inquire(AI ai) {
+            this.ai = ai;
+            transform = ai.GetComponent<Transform>();
+        }
+        public void InitialPhase()
+        {
+            checkedPositions = new List<Vector3>();
+            prevPosition = ai.transform.position;
+            distanceWalked = 0;
+
+            ai.agent.SetDestination(ai.threats[0].lastSeenWhere);
+            ai.activeBehavior = Update;
+        }
+
+        void EnvironmentAnalyzation()
+        {
+            RaycastHit[] hitArray = RayCastAround(360, 18, 2);
+            if (hitArray.Length > 0)
+            {
+                AIPathPoint[] pointCache = new AIPathPoint[hitArray.Length]; //x - index, y - value
+                List<AIPathPoint> pathPointCache = new List<AIPathPoint>();
+                int maxIndex = -1;
+                for (int i = 0; i < hitArray.Length; i++)
+                {
+                    bool found = false;
+                    for (int y = 0; y <= maxIndex; y++) if (pathPointCache[y].collider == hitArray[i].collider) { found = true; break; }
+                    if (!found) { pathPointCache.Add(new AIPathPoint(hitArray[i])); }
+                }
+
+                pointCache = pathPointCache.ToArray();
+
+                Vector3 selected;
+                //Vector3 estDirection = threats[0].lastSeen + threats[0].lastSeenVelocity;
+                if (posCount < 2)
+                {
+                    selected = new Vector2(0,Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity)));
+                    for (int i = 1; i < pointCache.Length; i++)
+                    {
+                        float angle;
+                        angle = Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity));
+                        if (angle < selected.y) { selected.y = angle; selected.x = i; }
+                    }
+                }
+                else {
+                    selected = new Vector3(0,0);
+                    for (int i = 0; i < pointCache.Length; i++)
+                    {
+                        int value = 0;
+                        if (pointCache[i].isPath) value++;
+                        if (CheckIfBeen(checkedPositions, pointCache[i].point, 10)) value++;
+                        if (value > selected.y) { selected.x = i; selected.y = value; }
+                    }
+                }
+                ai.agent.SetDestination(hitArray[(int)selected.x].point);
+                posCount++;
+            }
+        }
+
+        class AIPathPoint
+        {
+            public Collider collider;
+            public Vector3 point;
+            public float distance;
+            public bool isPath;
+            public float value;
+
+            public AIPathPoint(RaycastHit hit)
+            {
+                this.collider = hit.collider;
+                this.distance = hit.distance;
+                this.point = hit.point;
+                isPath = (distance > 10) ? true : false;
+            }
+
+
+        }
+
+        public void Update()
+        {
+            if (ai.threats[0].inSight) { ai.activeBehavior = ai.Attack; ai.agent.Stop(false); }
+            else if (ai.agent.remainingDistance < 1) EnvironmentAnalyzation();
+            else if (distanceWalked > 500) ai.activeBehavior = ai.Idle;
+
+            distanceWalked += (transform.position - prevPosition).magnitude;
+            prevPosition = transform.position;
+        }
+
+        RaycastHit[] RayCastAround(float degrees, int count, float threshold = 0, bool checkPos = false)
+        {
+            bool thEnabled = (threshold > 0) ? true : false;
+            float distance = (threshold > 5) ? threshold * 2 : 10;
+            List<RaycastHit> hitList = new List<RaycastHit>();
+
+            for (int i = 0; i < count; i++)
+            {
+                float rad = (((degrees / count) * i) - transform.rotation.eulerAngles.y) * Mathf.Deg2Rad;
+                RaycastHit hit;
+
+                Ray ray = new Ray(transform.position + (transform.up / 2), new Vector3(Mathf.Cos(rad), 0, Mathf.Sin(rad)));
+                if (Physics.Raycast(ray, out hit, distance, layerMask))
+                {
+                    if (thEnabled) { if (CheckIfNotTooClose(hit, threshold)) hitList.Add(hit); }
+                    else hitList.Add(hit);
+                }
+                else
+                {
+                    hit.point = ray.GetPoint(distance);
+                    hitList.Add(hit);
+                }
+                Debug.DrawLine(transform.position + (transform.up / 2), hit.point, Color.blue, 1f);
+            }
+            Debug.Log(hitList.Count);
+            return hitList.ToArray();
+        }
+
+        bool CheckIfNotTooClose(RaycastHit hit, float threshold)
+        {
+            if (hit.distance < threshold) return false;
+            return true;
+        }
+
+        bool CheckIfBeen(List<Vector3> vList, Vector3 value, float distance)
+        {
+            distance *= distance;
+            for (int i = 0; i < vList.Count; i++)
+            {
+                if (Mathf.Abs(value.sqrMagnitude - vList[i].sqrMagnitude) < distance) return true;
+            }
+            return false;
+        }
+
+    }
+
+    //public interface Behavior {
+    //    public void Update() { }
+    //}
+
 
     //Threat object
     [System.Serializable]
@@ -221,7 +333,9 @@ public class AI : MonoBehaviour {
         public bool isAgressive { get; private set; }
         public bool isEnemy { get; private set; }
         public int threatValue { get; private set; }
-        public Vector3 lastSeen { get; private set; }
+        public Vector3 lastSeenWhere { get; private set; }
+        public Vector3 lastSeenVelocity { get; private set; }
+        public float lastSeenTime { get; private set; }
         stats s;
 
         public Threat(GameObject gameObject, bool isFriendly, GameObject me)
@@ -263,7 +377,11 @@ public class AI : MonoBehaviour {
                 if (hit.collider.CompareTag(gameObject.tag)) inSight = true;
                 else
                 {
-                    if (inSight) lastSeen = gameObject.transform.position;
+                    if (inSight) { 
+                        lastSeenWhere = transform.position;
+                        lastSeenVelocity = gameObject.rigidbody.velocity;
+                        lastSeenTime = Time.time;
+                    }
                     inSight = false;
                 }
             }
