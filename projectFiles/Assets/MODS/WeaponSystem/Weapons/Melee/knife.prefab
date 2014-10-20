@@ -13,7 +13,7 @@ GameObject:
   - 222: {fileID: 22200000}
   - 114: {fileID: 11400000}
   m_Layer: 9
-  m_Name: MP5
+  m_Name: knife
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -53,24 +53,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 100000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d28d02e40afb4b147947c981055aa424, type: 3}
+  m_Script: {fileID: 11500000, guid: 3fd13359154115040be7b44c6de97126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hitPoint: {x: 0, y: 0, z: 0}
   model: {fileID: 0}
-  name: MP5
-  damageType: 4
-  speed: 1000
-  ReloadSpeed: 1
-  RateOfFire: 13.3000002
-  magazine:
-    cur: 30
-    max: 30
-  bullets:
-    cur: 600
-    max: 600
-  physicalBullet: 1
-  bullet: {fileID: 100000, guid: 720224b0bb7684543861607ad56448b9, type: 2}
+  name: Knife
+  damageType: 3
+  weaponRange: 3
 --- !u!222 &22200000
 CanvasRenderer:
   m_ObjectHideFlags: 1

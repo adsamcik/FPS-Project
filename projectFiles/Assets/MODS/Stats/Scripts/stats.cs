@@ -3,20 +3,16 @@ using UnityEngine.UI;
 using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
-public class stats : MonoBehaviour
-{
-    public class pStats
-    {
+public class stats : MonoBehaviour {
+    public class pStats {
         public int threatValue { get; private set; }
         public int estHealth { get; private set; }
         public bool hasArmor { get; private set; }
-        public pStats(float health, float armor)
-        {
+        public pStats(float health, float armor) {
             updateStats(health, armor);
             estimateThreat();
         }
-        public int estimateThreat()
-        {
+        public int estimateThreat() {
             threatValue += (hasArmor) ? 0 : +20;
             threatValue += 30 - (estHealth * 10);
             return threatValue;
@@ -35,15 +31,13 @@ public class stats : MonoBehaviour
             else return 4;
         }
 
-        public bool checkForArmor(float Armor)
-        {
+        public bool checkForArmor(float Armor) {
             return (Armor > 0) ? true : false;
         }
 
     }
 
-    public class Buff
-    {
+    public class Buff {
         byte MaxStacks;
         int HealthBoost;
         float length;
@@ -74,41 +68,34 @@ public class stats : MonoBehaviour
     Image ArmorBar;
 
     // PLAYER SPECIFIC FUNCTIONS
-    void playerUpdate()
-    {
+    void playerUpdate() {
         if (transform.position.y < -5) kill();
         if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit();
         if (enableRegeneration && !inCombat && Health < MaxHealth) { health(Regen * Time.deltaTime); if (Health > MaxHealth) Health = MaxHealth; }
     }
 
-    void playerKill()
-    {
+    void playerKill() {
         CheckSys.Respawn(transform.gameObject);
         SetHealth(MaxHealth);
         SetArmor(0);
     }
 
     //AI SPECIFIC FUNCTIONS
-    void aiUpdate()
-    {
+    void aiUpdate() {
         if (transform.position.y < -5) kill();
         if (enableRegeneration && !inCombat && Health < MaxHealth) { Health += Regen * Time.deltaTime; if (Health > MaxHealth) Health = MaxHealth; }
     }
 
-    void aiKill()
-    {
+    void aiKill() {
         Destroy(transform.gameObject);
     }
 
-    void aiHealthArmor(float hp, float arm = 0f)
-    {
-        if (hp != 0)
-        {
+    void aiHealthArmor(float hp, float arm = 0f) {
+        if (hp != 0) {
             Health += hp;
             //HealthBar.rectTransform.localScale = new Vector3((float)Health / 100, 1, 1);
         }
-        if (Armor != 0)
-        {
+        if (Armor != 0) {
             Armor += arm;
             //ArmorBar.rectTransform.localScale = new Vector3((float)Armor / 100, 1, 1);
         }
@@ -121,8 +108,7 @@ public class stats : MonoBehaviour
         Health = MaxHealth;
         publicStats = new pStats(Health, Armor);
 
-        if (gameObject.CompareTag("Player"))
-        {
+        if (gameObject.CompareTag("Player")) {
             if (enableHealth) HealthBar = GameObject.Find("--HUD/Stats/healthBar").GetComponent<Image>();
             if (enableArmor) ArmorBar = GameObject.Find("--HUD/Stats/armorBar").GetComponent<Image>();
             HealthBar.rectTransform.localScale = new Vector3((float)Health / 100, 1, 1);
@@ -130,16 +116,14 @@ public class stats : MonoBehaviour
             kill = playerKill;
             updt = playerUpdate;
         }
-        else
-        {
+        else {
             kill = aiKill;
             updt = aiUpdate;
         }
     }
     void Update() { updt(); }
 
-    void leaveCombat()
-    {
+    void leaveCombat() {
         inCombat = false;
     }
 
@@ -148,33 +132,27 @@ public class stats : MonoBehaviour
     /// </summary>
     /// <param name="hp">health</param>
     /// <param name="arm">armor</param>
-    void health(float hp)
-    {
-        if (hp != 0)
-        {
+    void health(float hp) {
+        if (hp != 0) {
             float targetHP = Health += hp;
             Health = (targetHP > MaxHealth) ? MaxHealth : targetHP;
             if (HealthBar != null) HealthBar.rectTransform.localScale = new Vector3((float)Health / 100, 1, 1);
         }
     }
 
-    public void SetHealth(float hp)
-    {
+    public void SetHealth(float hp) {
         Health = hp;
         if (HealthBar != null) HealthBar.rectTransform.localScale = new Vector3((float)Health / 100, 1, 1);
     }
 
-    public void SetArmor(float armor)
-    {
+    public void SetArmor(float armor) {
         Armor = armor;
         if (ArmorBar != null) ArmorBar.rectTransform.localScale = new Vector3((float)Armor / 100, 1, 1);
     }
 
-    public void dealDamage(DamageType dtype)
-    {
+    public void dealDamage(DamageType dtype) {
         inCombat = true;
-        switch ((int)dtype)
-        {
+        switch ((int)dtype) {
             case 1: //Fall
                 health(-Mathf.RoundToInt(rigidbody.velocity.y * 2));
                 break;
@@ -185,10 +163,10 @@ public class stats : MonoBehaviour
                 health(-25);
                 break;
             case 4: //bullet
-                health(-armorReduction(25));
+                health(-armorReduction(10));
                 break;
             case 5: //Piercing bullet
-                health(-armorReduction(30, 20));
+                health(-armorReduction(10, 20));
                 break;
         }
         CancelInvoke();
@@ -196,12 +174,10 @@ public class stats : MonoBehaviour
         else Invoke("leaveCombat", LeaveCombatAfter);
     }
 
-    public void dealDamage(DamageType dtype, GameObject damager)
-    {
+    public void dealDamage(DamageType dtype, GameObject damager) {
         if (damager == gameObject) return; //temporary
         inCombat = true;
-        switch ((int)dtype)
-        {
+        switch ((int)dtype) {
             case 1: //Fall
                 health(-Mathf.RoundToInt(rigidbody.velocity.y * 2));
                 break;
@@ -212,10 +188,10 @@ public class stats : MonoBehaviour
                 health(-25);
                 break;
             case 4: //bullet
-                health(-armorReduction(25));
+                health(-armorReduction(10));
                 break;
             case 5: //Piercing bullet
-                health(-armorReduction(30, 20));
+                health(-armorReduction(10, 20));
                 break;
         }
         CancelInvoke();
@@ -225,8 +201,7 @@ public class stats : MonoBehaviour
         if (gameObject.CompareTag("AI")) GetComponent<AI>().shotMe(damager);
     }
 
-    int armorReduction(int Base, int armorCost = 10)
-    {
+    int armorReduction(int Base, int armorCost = 10) {
         if (!enableArmor || Armor == 0) return Base;
 
         Base -= Mathf.RoundToInt(Base * ((float)Armor / 100));
@@ -237,8 +212,8 @@ public class stats : MonoBehaviour
         return Base;
     }
 
-    public void CountFall() { 
-    
+    public void CountFall() {
+
     }
 
 }

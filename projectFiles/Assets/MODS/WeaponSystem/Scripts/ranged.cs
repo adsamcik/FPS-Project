@@ -2,8 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class ranged : Weapon
-{
+public class ranged : Weapon {
     bool dropped;
     public float speed = 1000;
 
@@ -23,36 +22,24 @@ public class ranged : Weapon
 
     Text ammoText;
 
-    override protected void Start()
-    {
-        base.Start();
+    override protected void Awake() {
+        base.Awake();
 
         if (physicalBullet) bulletFunction = PhysicalBulletAttack; else bulletFunction = BulletAttack;
-        try
-        {
-            wC = transform.parent.parent.GetComponent<weaponController>();
-        }
-        catch
-        {
-            Drop();
-        }
 
         ammoText = GameObject.Find("--HUD/Ammo/ammoText").GetComponent<Text>();
-        if (wC) DisplayAmmo();
+        Display();
     }
 
-    public override void Attack()
-    {
+    public override void Attack() {
         if (Break > 0) return;
         if (!wC.isPlayer && magazine.cur == 0) RAction();
         else if (CheckBullets()) bulletFunction();
-        DisplayAmmo();
+        Display();
     }
 
-    bool CheckBullets()
-    {
-        if (magazine.cur == 0)
-        {
+    bool CheckBullets() {
+        if (magazine.cur == 0) {
             if (bullets.cur == 0) wC.displaytext("Out of Ammo");
             else wC.displaytext("press R to reload");
             return false;
@@ -60,49 +47,38 @@ public class ranged : Weapon
 
         Break = 1 / RateOfFire;
         magazine.cur--;
-        DisplayAmmo();
+        Display();
         return true;
     }
 
-    void RefreshAmmo()
-    {
-        //Debug only
+    public override void Display() {
 
+        if (wC != null && wC.isPlayer) ammoText.text = magazine.cur + "/" + (bullets.cur + magazine.cur);
     }
 
-    void DisplayAmmo() {
-        if (wC.isPlayer) ammoText.text = magazine.cur + "/" + (bullets.cur + magazine.cur);
-    }
-
-    public override void RAction()
-    {
+    public override void RAction() {
         if (Break > 0) return;
-        if (bullets.cur > 0 && magazine.cur != magazine.max)
-        {
+        if (bullets.cur > 0 && magazine.cur != magazine.max) {
             Break = ReloadTime;
-            Debug.Log(Break);
             int bNeed = magazine.max - magazine.cur;
             magazine.cur += (bullets.cur - bNeed > 0) ? bNeed : bNeed = bullets.cur;
             bullets.cur -= bNeed;
-            DisplayAmmo();
+            Display();
         }
     }
 
-    void PhysicalBulletAttack()
-    {
+    void PhysicalBulletAttack() {
         Vector3 aimTo;
-        GameObject b = (GameObject)Instantiate(bullet, transform.position, Quaternion.LookRotation(aimTo = wC.getAimPoint() - transform.position));
+        GameObject b = (GameObject)Instantiate(bullet, shootPoint.position, Quaternion.LookRotation(aimTo = wC.getAimPoint() - transform.position));
         b.rigidbody.AddForce(aimTo.normalized * speed);
         b.GetComponent<bulletScript>().damager = gameObject;
     }
 
-    void BulletAttack()
-    {
+    void BulletAttack() {
         RaycastHit hit;
-        Vector3 position = transform.position;
         //Vector3 position = transform.position + transform.forward; Currently causes issues with raycast due to raycast ignore
-        Debug.DrawRay(position, wC.getAimPoint() - position);
-        Vector3 direction = wC.getAimPoint() - position;
+        Debug.DrawRay(shootPoint.position, wC.getAimPoint() - shootPoint.position);
+        Vector3 direction = wC.getAimPoint() - shootPoint.position;
 
         int oldLayer = gameObject.layer;
 
@@ -111,7 +87,7 @@ public class ranged : Weapon
 
         int layerToIgnore = 1 << gameObject.layer;
         layerToIgnore = ~layerToIgnore;
-        if (Physics.Raycast(position, direction, out hit, 100, layerToIgnore) && (hit.collider.CompareTag("Player") || hit.collider.CompareTag("AI"))) hit.transform.GetComponent<stats>().dealDamage(damageType, gameObject);
+        if (Physics.Raycast(shootPoint.position, direction, out hit, 100, layerToIgnore) && (hit.collider.CompareTag("Player") || hit.collider.CompareTag("AI"))) hit.transform.GetComponent<stats>().dealDamage(damageType, gameObject);
         gameObject.layer = oldLayer;
     }
 

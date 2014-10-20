@@ -3,11 +3,10 @@ using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public class weaponController : MonoBehaviour
-{
+public class weaponController : MonoBehaviour {
     List<WeaponInfo> weapons = new List<WeaponInfo>();
 
-    public bool isPlayer {get; private set;}
+    public bool isPlayer { get; private set; }
     bool WeaponHidden;
 
     int cW; //Current weapon
@@ -17,32 +16,13 @@ public class weaponController : MonoBehaviour
     public delegate Vector3 vectorSwitch();
     public vectorSwitch getAimPoint;
 
-    void Awake()
-    {
-        GameObject Weapons;
-        Transform checkChild;
-        if ((checkChild = transform.FindChild("weapons")) == null)
-        {
-            Weapons = new GameObject();
-            Weapons.transform.parent = transform;
-            Weapons.name = "weapons";
-        }
-        else Weapons = checkChild.gameObject;
-
-        Transform[] hasWeapons = Weapons.GetComponentsInChildren<Transform>();
-        for (int i = 1; i < hasWeapons.Length; i++)
-        {
-            weapons.Add(new WeaponInfo(hasWeapons[i].gameObject));
-        }
-
+    void Awake() {
         //Important initialization. Defines how will weapon controller work
-        if (gameObject.CompareTag("Player"))
-        {
+        if (gameObject.CompareTag("Player")) {
             isPlayer = true;
             getAimPoint = PlayerGetAimPoint;
         }
-        else
-        {
+        else {
             isPlayer = false;
             getAimPoint = AIGetAimPoint;
         }
@@ -51,37 +31,35 @@ public class weaponController : MonoBehaviour
     }
 
     public void newWeapon(GameObject w) {
-        if (w.transform.parent == transform) {
-            weapons.Add(new WeaponInfo(w));
-            w.transform.parent = transform.FindChild("weapons");
-            w.transform.localPosition = Vector3.zero;
+        weapons.Add(new WeaponInfo(w));
+        w.transform.parent = transform.FindChild("Camera/weapons");
+        w.transform.localPosition = Vector3.zero;
+    }
+
+    void ChangeWeapon(int id) {
+        if (id < weapons.Count) {
+            weapons[cW].weapon.model.SetActive(false);
+            cW = id;
+            weapons[id].weapon.Display();
+            weapons[id].weapon.model.SetActive(true);
         }
     }
 
-    void ChangeWeapon(int id)
-    {
-        if(id < weapons.Count) cW = id;
-    }
-
-    void Update()
-    {
-        if (weapons.Count > 0)
-        {
+    void Update() {
+        if (weapons.Count > 0) {
             playerInput();
             weapons[cW].weapon.Update();
         }
+        Debug.Log(weapons.Count);
     }
 
-    public void CurrentWeaponAttack()
-    {
-        if (weapons.Count > 0)
-        {
+    public void CurrentWeaponAttack() {
+        if (weapons.Count > 0) {
             weapons[cW].weapon.Attack();
         }
     }
 
-    void playerInput()
-    {
+    void playerInput() {
         if (!isPlayer) return;
         if (Input.GetMouseButton(0)) CurrentWeaponAttack();
         else if (Input.GetKeyDown(KeyCode.R)) weapons[cW].weapon.RAction();
@@ -89,33 +67,28 @@ public class weaponController : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.Alpha2)) ChangeWeapon(1);
     }
 
-    public void displaytext(string text)
-    {
+    public void displaytext(string text) {
         StopCoroutine("DisplayText");
         StartCoroutine("DisplayText", text);
     }
 
-    IEnumerator DisplayText(string text)
-    {
+    IEnumerator DisplayText(string text) {
         //GUIText.text = text;
         yield return new WaitForSeconds(1f);
         //GUIText.text = "";
     }
-    Vector3 PlayerGetAimPoint()
-    {
+    Vector3 PlayerGetAimPoint() {
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit = new RaycastHit();
 
-        if (Physics.Raycast(ray, out hit))
-        {
+        if (Physics.Raycast(ray, out hit)) {
             return hit.point;
         }
 
         return ray.GetPoint(5);
     }
 
-    Vector3 AIGetAimPoint()
-    {
+    Vector3 AIGetAimPoint() {
         return gameObject.GetComponent<AI>().threats[0].gameObject.transform.position - weapons[cW].weapon.hitPoint;
     }
 
@@ -136,8 +109,7 @@ public class weaponController : MonoBehaviour
 }
 
 [System.Serializable]
-public class Weapon : MonoBehaviour
-{
+public class Weapon : MonoBehaviour {
     [HideInInspector]
     protected GameObject gameObject;
     [HideInInspector]
@@ -146,48 +118,68 @@ public class Weapon : MonoBehaviour
     protected weaponController wC;
     [HideInInspector]
     public Vector3 hitPoint;
-    public GameObject model;
+
+    public GameObject model { get; private set; }
+    protected Transform shootPoint;
+    protected Text dropText;
 
     public string name = "Weapon";
     public DamageType damageType;
-    protected float weaponRange = -1;
+    public float weaponRange = -1;
 
     protected float Break;
 
-    protected virtual void Start()
-    {
+    protected virtual void Awake() {
         transform = GetComponent<Transform>();
         gameObject = transform.gameObject;
-
-        transform.localPosition = Vector3.forward;
         gameObject.name = name;
-    }
+        dropText = GetComponentInChildren<Text>();
 
-    protected void OnTriggerEnter(Collider other)
-    {
-        if (!other.isTrigger && (other.CompareTag("Player") || other.CompareTag("AI")))
-        {
-            transform.parent = other.transform;
-            wC = transform.parent.GetComponent<weaponController>();
-            wC.newWeapon(gameObject);
-            Destroy(GetComponent<BoxCollider>());
-            GetComponent<Text>().text = "";
+        model = transform.Find("model").gameObject;
+        model.SetActive(false);
+
+        shootPoint = transform.Find("model/shootPoint");
+
+        try {
+            PickUp(transform.parent.parent.parent);
+        }
+        catch {
+            Drop();
         }
     }
 
-    public void Drop()
-    {
-        //gameObject.AddComponent<Rigidbody>();
-        BoxCollider b = gameObject.AddComponent<BoxCollider>();
-        RectTransform rt = GetComponent<RectTransform>();
-        b.size = new Vector3(rt.sizeDelta.x, 1, rt.sizeDelta.y);
-        b.isTrigger = true;
-        GetComponent<Text>().text = name;
+    protected void OnTriggerEnter(Collider other) {
+        if (!other.isTrigger) {
+            PickUp(other.transform);
+        }
     }
 
-    public virtual void Update()
-    {
+    protected void PickUp(Transform whom) {
+        if (whom.CompareTag("AI") || whom.CompareTag("Player")) {
+            transform.parent = whom.Find("Camera/weapons");
+            wC = whom.GetComponent<weaponController>();
+            wC.newWeapon(gameObject);
+            Destroy(GetComponent<BoxCollider>());
+            dropText.text = "";
+        }
+    }
+
+    public void Drop() {
+        //gameObject.AddComponent<Rigidbody>();
+        BoxCollider b = gameObject.AddComponent<BoxCollider>();
+        RectTransform rt = GetComponentInChildren<RectTransform>();
+        b.size = new Vector3(0.1f, 1, 2);
+        b.isTrigger = true;
+        dropText.text = name;
+        transform.parent = null;
+    }
+
+    public virtual void Update() {
         Break -= (Break > 0) ? Time.deltaTime : 0;
+    }
+
+    public virtual void Display() {
+
     }
 
     public virtual void RAction() { }

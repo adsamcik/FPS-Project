@@ -4,47 +4,39 @@ using System.Collections;
 
 public delegate void voidSwitch();
 public static class API {
-    public static void SetBool(string name, bool booleanValue)
-    {
+    public static void SetBool(string name, bool booleanValue) {
         PlayerPrefs.SetInt(name, booleanValue ? 1 : 0);
     }
 
-    public static bool GetBool(string name)
-    {
+    public static bool GetBool(string name) {
         return PlayerPrefs.GetInt(name) == 1 ? true : false;
     }
 
-    public static bool GetBool(string name, bool defaultValue)
-    {
-        if (PlayerPrefs.HasKey(name))
-        {
+    public static bool GetBool(string name, bool defaultValue) {
+        if (PlayerPrefs.HasKey(name)) {
             return GetBool(name);
         }
 
         return defaultValue;
     }
 
-    public static void savePosition(Vector3 position)
-    {
+    public static void savePosition(Vector3 position) {
         PlayerPrefs.SetFloat(Application.loadedLevelName + "x", position.x);
         PlayerPrefs.SetFloat(Application.loadedLevelName + "y", position.y);
         PlayerPrefs.SetFloat(Application.loadedLevelName + "z", position.z);
         PlayerPrefs.Save();
     }
 
-    public static void saveCheckpoint(int checkpoint)
-    {
+    public static void saveCheckpoint(int checkpoint) {
         PlayerPrefs.SetInt(Application.loadedLevelName + "check", checkpoint);
         PlayerPrefs.Save();
     }
 
-    public static int loadCheckpoint()
-    {
+    public static int loadCheckpoint() {
         return PlayerPrefs.GetInt(Application.loadedLevelName + "check");
     }
 
-    public static Vector3 loadPosition()
-    {
+    public static Vector3 loadPosition() {
         Vector3 position;
         position.x = PlayerPrefs.GetFloat(Application.loadedLevelName + "x");
         position.y = PlayerPrefs.GetFloat(Application.loadedLevelName + "y");
