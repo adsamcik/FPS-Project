@@ -34,7 +34,7 @@ public class AI : MonoBehaviour {
 
     void Update() {
         activeBehavior();
-        Debug.Log(activeBehavior.Method);
+        //Debug.Log(activeBehavior.Method);
     }
 
     public void Idle() {
@@ -162,6 +162,8 @@ public class AI : MonoBehaviour {
 
         int layerMask = 1 << 31;
 
+        float radius = 20;
+
         public Inquire(AI ai) {
             this.ai = ai;
             transform = ai.GetComponent<Transform>();
@@ -175,42 +177,78 @@ public class AI : MonoBehaviour {
             ai.activeBehavior = Update;
         }
 
-        void EnvironmentAnalyzation() {
-            RaycastHit[] hitArray = RayCastAround(360, 18, 2);
-            if (hitArray.Length > 0) {
-                AIPathPoint[] pointCache = new AIPathPoint[hitArray.Length]; //x - index, y - value
-                List<AIPathPoint> pathPointCache = new List<AIPathPoint>();
-                int maxIndex = -1;
-                for (int i = 0; i < hitArray.Length; i++) {
-                    bool found = false;
-                    for (int y = 0; y <= maxIndex; y++) if (pathPointCache[y].collider == hitArray[i].collider) { found = true; break; }
-                    if (!found) { pathPointCache.Add(new AIPathPoint(hitArray[i])); }
-                }
+        //void EnvironmentAnalyzation() {
+        //    RaycastHit[] hitArray = RayCastAround(360, 18, 2);
+        //    if (hitArray.Length > 0) {
+        //        AIPathPoint[] pointCache = new AIPathPoint[hitArray.Length]; //x - index, y - value
+        //        List<AIPathPoint> pathPointCache = new List<AIPathPoint>();
+        //        int maxIndex = -1;
+        //        for (int i = 0; i < hitArray.Length; i++) {
+        //            bool found = false;
+        //            for (int y = 0; y <= maxIndex; y++) if (pathPointCache[y].collider == hitArray[i].collider) { found = true; break; }
+        //            if (!found) { pathPointCache.Add(new AIPathPoint(hitArray[i])); }
+        //        }
 
-                pointCache = pathPointCache.ToArray();
+        //        pointCache = pathPointCache.ToArray();
 
-                Vector3 selected;
-                //Vector3 estDirection = threats[0].lastSeen + threats[0].lastSeenVelocity;
-                if (posCount < 2) {
-                    selected = new Vector2(0, Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity)));
-                    for (int i = 1; i < pointCache.Length; i++) {
-                        float angle;
-                        angle = Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity));
-                        if (angle < selected.y) { selected.y = angle; selected.x = i; }
-                    }
-                }
-                else {
-                    selected = new Vector3(0, 0);
-                    for (int i = 0; i < pointCache.Length; i++) {
-                        int value = 0;
-                        if (pointCache[i].isPath) value++;
-                        if (CheckIfBeen(checkedPositions, pointCache[i].point, 10)) value++;
-                        if (value > selected.y) { selected.x = i; selected.y = value; }
-                    }
-                }
-                ai.agent.SetDestination(hitArray[(int)selected.x].point);
-                posCount++;
+        //        Vector3 selected;
+        //        //Vector3 estDirection = threats[0].lastSeen + threats[0].lastSeenVelocity;
+        //        if (posCount < 2) {
+        //            selected = new Vector2(0, Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity)));
+        //            for (int i = 1; i < pointCache.Length; i++) {
+        //                float angle;
+        //                angle = Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity));
+        //                if (angle < selected.y) { selected.y = angle; selected.x = i; }
+        //            }
+        //        }
+        //        else {
+        //            selected = new Vector3(0, 0);
+        //            for (int i = 0; i < pointCache.Length; i++) {
+        //                int value = 0;
+        //                if (pointCache[i].isPath) value++;
+        //                if (CheckIfBeen(checkedPositions, pointCache[i].point, 10)) value++;
+        //                if (value > selected.y) { selected.x = i; selected.y = value; }
+        //            }
+        //        }
+        //        ai.agent.SetDestination(hitArray[(int)selected.x].point);
+        //        posCount++;
+        //    }
+        //}
+
+        float PathLength(NavMeshPath path) {
+            if (path.corners.Length == 0) return 0;
+            if (path.corners.Length < 2) return Vector3.Distance(transform.position, path.corners[0]);
+
+            Vector3 previousCorner = path.corners[0];
+            float lengthSoFar = 0.0F;
+            for (int i = 1; i < path.corners.Length; i++ ) {
+                Vector3 currentCorner = path.corners[i];
+                lengthSoFar += Vector3.Distance(previousCorner, currentCorner);
+                previousCorner = currentCorner;
             }
+
+            return lengthSoFar;
+        }
+
+        NavMeshPath FindSpot(Vector3 iAmHere, float distance) {
+            NavMeshPath path = new NavMeshPath();
+            NavMeshHit navPos;
+
+            float angle = Random.Range(0, 360);
+            Vector3 position = iAmHere + new Vector3(distance * Mathf.Cos(angle), 0, distance * Mathf.Sin(angle));
+            position.y = Random.Range(0, 200);
+            NavMesh.SamplePosition(position, out navPos, radius, -1);
+
+            if (!CheckIfBeen(navPos.position, 5f) && ai.agent.CalculatePath(navPos.position, path)) return path;
+            else FindSpot(iAmHere, distance);
+
+            return path;
+        } 
+
+        void EnvironmentAnalyzation() {
+            checkedPositions.Add(transform.position);
+            Debug.DrawRay(transform.position, Vector3.up * 100, Color.red, 10000000f);
+            ai.agent.path = FindSpot(transform.position, radius);   
         }
 
         class AIPathPoint {
@@ -268,10 +306,10 @@ public class AI : MonoBehaviour {
             return true;
         }
 
-        bool CheckIfBeen(List<Vector3> vList, Vector3 value, float distance) {
+        bool CheckIfBeen(Vector3 value, float distance) {
             distance *= distance;
-            for (int i = 0; i < vList.Count; i++) {
-                if (Mathf.Abs(value.sqrMagnitude - vList[i].sqrMagnitude) < distance) return true;
+            for (int i = 0; i < checkedPositions.Count; i++) {
+                if (Mathf.Abs(value.sqrMagnitude - checkedPositions[i].sqrMagnitude) < distance) return true;
             }
             return false;
         }

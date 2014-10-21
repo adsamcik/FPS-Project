@@ -32,7 +32,6 @@ public class weaponController : MonoBehaviour {
 
     public void newWeapon(GameObject w) {
         weapons.Add(new WeaponInfo(w));
-        w.transform.parent = transform.FindChild("Camera/weapons");
         w.transform.localPosition = Vector3.zero;
     }
 
@@ -50,7 +49,6 @@ public class weaponController : MonoBehaviour {
             playerInput();
             weapons[cW].weapon.Update();
         }
-        Debug.Log(weapons.Count);
     }
 
     public void CurrentWeaponAttack() {
@@ -141,7 +139,8 @@ public class Weapon : MonoBehaviour {
         shootPoint = transform.Find("model/shootPoint");
 
         try {
-            PickUp(transform.parent.parent.parent);
+            if (transform.parent.parent.CompareTag("AI")) PickUp(transform.parent.parent);
+            else PickUp(transform.parent.parent.parent);
         }
         catch {
             Drop();
@@ -155,8 +154,11 @@ public class Weapon : MonoBehaviour {
     }
 
     protected void PickUp(Transform whom) {
-        if (whom.CompareTag("AI") || whom.CompareTag("Player")) {
-            transform.parent = whom.Find("Camera/weapons");
+        string tag = whom.tag;
+        if (tag == "AI" || tag == "Player") {
+            if(tag == "AI") transform.parent = whom.Find("weapons");
+            else transform.parent = whom.Find("Camera/weapons");
+
             wC = whom.GetComponent<weaponController>();
             wC.newWeapon(gameObject);
             Destroy(GetComponent<BoxCollider>());
