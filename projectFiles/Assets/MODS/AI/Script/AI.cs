@@ -20,60 +20,32 @@ public class AI : MonoBehaviour {
 
 
     //Behaviors
+    public void Idle() { }
     public Inquire inquire;
+    public Patrol patrol;
+    public Attack attack;
 
     void Start() {
         //Initialize behaviors
         inquire = new Inquire(this);
+        patrol = new Patrol(this);
+        attack = new Attack(this);
+
 
         StartCoroutine("threatUpdate");
         canShoot = (gameObject.GetComponent<weaponController>()) ? true : false;
         agent = GetComponent<NavMeshAgent>();
-        activeBehavior = Idle;
+        if (patrol.enabled) activeBehavior = patrol.Update;
+        else activeBehavior = Idle;
     }
 
     void Update() {
         activeBehavior();
+        if (threats[0].inSight && threats[0].threatValue > 600) { 
+            agent.Stop(false); 
+            activeBehavior = attack.Update; 
+        }
         //Debug.Log(activeBehavior.Method);
-    }
-
-    public void Idle() {
-        if (threats[0].inSight && threats[0].threatValue > 600) activeBehavior = Attack;
-    }
-
-    public void Attack() {
-        if (!checkThreats()) return;
-
-        if (threats[0].inSight) {
-            if (canShoot && threats[0].threatValue > 600) {
-                transform.LookAt(new Vector3(threats[0].transform.position.x, transform.position.y, threats[0].transform.position.y));
-                //rigidbody.MoveRotation(Quaternion.Euler(new Vector3(0, threats[0].transform.position.y, 0)));
-                GetComponent<weaponController>().CurrentWeaponAttack();
-            }
-        }
-        else {
-            activeBehavior = inquire.InitialPhase;
-        }
-    }
-
-    public void Aware() {
-
-    }
-
-
-
-
-    public enum behavior {
-        Idle = 0,
-        Attack = 1,
-        Inquire = 2,
-        Patrol = 3,
-        Flee = 4,
-        Help = 5,
-        Follow = 6,
-        Seek = 7,
-        Defend = 8,
-        Dead = 9
     }
 
     public bool checkThreats() {
@@ -143,17 +115,50 @@ public class AI : MonoBehaviour {
         threatChanged = false;
     }
 
-    public class AIpath {
-        public Vector3 to;
-        public Vector3[] colliders;
+    public class Attack : Behavior {
+        public Attack(AI ai) {
+            this.ai = ai;
+            transform = ai.GetComponent<Transform>();
+        }
 
+        public void Update() {
+
+            if (!ai.checkThreats()) return;
+
+            if (ai.threats[0].inSight) {
+                if (ai.canShoot && ai.threats[0].threatValue > 600) {
+                    transform.LookAt(new Vector3(ai.threats[0].transform.position.x, transform.position.y, ai.threats[0].transform.position.y));
+                    ai.GetComponent<weaponController>().CurrentWeaponAttack();
+                }
+            }
+            else {
+                ai.activeBehavior = ai.inquire.InitialPhase;
+            }
+        }
+    }
+
+    [System.Serializable]
+    public class Patrol : Behavior {
+        public Patrol(AI ai) {
+            this.ai = ai;
+            transform = ai.GetComponent<Transform>();
+        }
+
+        public bool enabled = false;
+        public TransformPoint[] waypoints;
+        int curW;
+
+        public void Update() {
+
+        }
     }
 
     //[System.Serializable]
-    public class Inquire {
-        AI ai;
-        Transform transform;
-
+    public class Inquire : Behavior {
+        public Inquire(AI ai) {
+            this.ai = ai;
+            transform = ai.GetComponent<Transform>();
+        }
         float distanceWalked;
         Vector3 prevPosition;
 
@@ -164,10 +169,6 @@ public class AI : MonoBehaviour {
 
         float radius = 20;
 
-        public Inquire(AI ai) {
-            this.ai = ai;
-            transform = ai.GetComponent<Transform>();
-        }
         public void InitialPhase() {
             checkedPositions = new List<Vector3>();
             prevPosition = ai.transform.position;
@@ -177,51 +178,13 @@ public class AI : MonoBehaviour {
             ai.activeBehavior = Update;
         }
 
-        //void EnvironmentAnalyzation() {
-        //    RaycastHit[] hitArray = RayCastAround(360, 18, 2);
-        //    if (hitArray.Length > 0) {
-        //        AIPathPoint[] pointCache = new AIPathPoint[hitArray.Length]; //x - index, y - value
-        //        List<AIPathPoint> pathPointCache = new List<AIPathPoint>();
-        //        int maxIndex = -1;
-        //        for (int i = 0; i < hitArray.Length; i++) {
-        //            bool found = false;
-        //            for (int y = 0; y <= maxIndex; y++) if (pathPointCache[y].collider == hitArray[i].collider) { found = true; break; }
-        //            if (!found) { pathPointCache.Add(new AIPathPoint(hitArray[i])); }
-        //        }
-
-        //        pointCache = pathPointCache.ToArray();
-
-        //        Vector3 selected;
-        //        //Vector3 estDirection = threats[0].lastSeen + threats[0].lastSeenVelocity;
-        //        if (posCount < 2) {
-        //            selected = new Vector2(0, Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity)));
-        //            for (int i = 1; i < pointCache.Length; i++) {
-        //                float angle;
-        //                angle = Mathf.Abs(Vector3.Angle(pointCache[0].point - transform.position, ai.threats[0].lastSeenVelocity));
-        //                if (angle < selected.y) { selected.y = angle; selected.x = i; }
-        //            }
-        //        }
-        //        else {
-        //            selected = new Vector3(0, 0);
-        //            for (int i = 0; i < pointCache.Length; i++) {
-        //                int value = 0;
-        //                if (pointCache[i].isPath) value++;
-        //                if (CheckIfBeen(checkedPositions, pointCache[i].point, 10)) value++;
-        //                if (value > selected.y) { selected.x = i; selected.y = value; }
-        //            }
-        //        }
-        //        ai.agent.SetDestination(hitArray[(int)selected.x].point);
-        //        posCount++;
-        //    }
-        //}
-
         float PathLength(NavMeshPath path) {
             if (path.corners.Length == 0) return 0;
             if (path.corners.Length < 2) return Vector3.Distance(transform.position, path.corners[0]);
 
             Vector3 previousCorner = path.corners[0];
             float lengthSoFar = 0.0F;
-            for (int i = 1; i < path.corners.Length; i++ ) {
+            for (int i = 1; i < path.corners.Length; i++) {
                 Vector3 currentCorner = path.corners[i];
                 lengthSoFar += Vector3.Distance(previousCorner, currentCorner);
                 previousCorner = currentCorner;
@@ -243,12 +206,12 @@ public class AI : MonoBehaviour {
             else FindSpot(iAmHere, distance);
 
             return path;
-        } 
+        }
 
         void EnvironmentAnalyzation() {
             checkedPositions.Add(transform.position);
             Debug.DrawRay(transform.position, Vector3.up * 100, Color.red, 10000000f);
-            ai.agent.path = FindSpot(transform.position, radius);   
+            ai.agent.path = FindSpot(transform.position, radius);
         }
 
         class AIPathPoint {
@@ -269,8 +232,7 @@ public class AI : MonoBehaviour {
         }
 
         public void Update() {
-            if (ai.threats[0].inSight) { ai.activeBehavior = ai.Attack; ai.agent.Stop(false); }
-            else if (ai.agent.remainingDistance < 1) EnvironmentAnalyzation();
+            if (ai.agent.remainingDistance < 1) EnvironmentAnalyzation();
             else if (distanceWalked > 500) ai.activeBehavior = ai.Idle;
 
             distanceWalked += (transform.position - prevPosition).magnitude;
@@ -316,9 +278,11 @@ public class AI : MonoBehaviour {
 
     }
 
-    //public interface Behavior {
-    //    public void Update() { }
-    //}
+    public class Behavior {
+        protected AI ai;
+        protected Transform transform;
+        public void Update() { }
+    }
 
 
     //Threat object

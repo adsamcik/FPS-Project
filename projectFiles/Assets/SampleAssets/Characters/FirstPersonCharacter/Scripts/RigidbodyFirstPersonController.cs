@@ -255,6 +255,10 @@ namespace UnitySampleAssets.Characters.FirstPerson {
             return false;
         }
 
+        //bool ObstacleCheck() { 
+        
+        //}
+
         void Climb(Vector3 position) //This function is there to enable us call coroutine like normal function
         {
             StartCoroutine("climb", position); // needs to be coroutine due to need of using yields
@@ -339,14 +343,14 @@ namespace UnitySampleAssets.Characters.FirstPerson {
 
         void rotateCamera(float toAngle) {
             StopCoroutine("RotateCamera");
-            StartCoroutine("RotateCamera", toAngle); //Rotates camera to horizontal position
+            StartCoroutine("RotateCamera", toAngle); //Rotates the camera to horizontal position
         }
 
         IEnumerator RotateCamera(float toAngle) {
             float time = 0f;
             Vector3 original = (_camera.transform.localEulerAngles.z > 180) ? new Vector3(_camera.transform.localEulerAngles.x, _camera.transform.localEulerAngles.y, _camera.transform.localEulerAngles.z - 360) : _camera.transform.localEulerAngles;
             Debug.Log(original);
-            //Unity convert negative angles to positive angles, but this is major problem while -10 is 350 degrees, |-10| is not the same as |350|
+            //Unity convert negative angles to positive angles, but this is major problem while -10 is 350 degrees, but |-10| is not the same as |350|
             while (time != 1) {
                 time += (time + Time.deltaTime < 1) ? Time.deltaTime * 2 : 1 - time; //if(time+Time.deltaTime < 1) {time += Time.deltaTime*2;} else {time += 1-time}
                 _camera.transform.localEulerAngles = Vector3.Lerp(original, new Vector3(_camera.transform.localEulerAngles.x, _camera.transform.localEulerAngles.y, toAngle), time);

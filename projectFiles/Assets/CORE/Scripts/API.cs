@@ -77,3 +77,30 @@ public class CapacityOf {
         this.max = max;
     }
 }
+
+[System.Serializable]
+public class TransformPoint {
+    public Transform transform;
+    public Vector3 point;
+
+    public TransformPoint(Transform t) {
+        transform = t;
+    }
+    public TransformPoint(Vector3 p) {
+        point = p;
+    }
+
+    public Vector3 GetPosition() {
+        if (transform == null) return point;
+        else return transform.position;
+    }
+
+    public void SetPosition(Transform t) {
+        transform = t;
+    }
+
+    public void SetPosition(Vector3 p) {
+        transform = null;
+        point = p;
+    }
+}
