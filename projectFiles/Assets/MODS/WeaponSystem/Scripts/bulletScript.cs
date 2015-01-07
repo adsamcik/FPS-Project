@@ -11,7 +11,7 @@ public class bulletScript : MonoBehaviour {
 
     void OnTriggerEnter(Collider other) {
         if (other.isTrigger) return;
-        if (other.CompareTag("Player") || other.CompareTag("AI")) other.GetComponent<stats>().dealDamage(DamageType,damager);
+        if (other.CompareTag("Player") || other.CompareTag("AI")) other.GetComponent<Stats>().dealDamage(DamageType,damager);
         Destroy(gameObject);
     }
 }

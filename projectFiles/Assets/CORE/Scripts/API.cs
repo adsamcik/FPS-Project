@@ -45,8 +45,7 @@ public static class API {
     }
 }
 
-public enum DamageType
-{
+public enum DamageType {
     fall = 1,
     fire = 2,
     melee = 3,
@@ -54,8 +53,7 @@ public enum DamageType
     piercingBullet = 5
 }
 
-public enum Phase
-{
+public enum Phase {
     Red = 0,
     Green = 1,
     Blue = 2

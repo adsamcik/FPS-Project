@@ -87,7 +87,7 @@ public class ranged : Weapon {
 
         int layerToIgnore = 1 << gameObject.layer;
         layerToIgnore = ~layerToIgnore;
-        if (Physics.Raycast(shootPoint.position, direction, out hit, 100, layerToIgnore) && (hit.collider.CompareTag("Player") || hit.collider.CompareTag("AI"))) hit.transform.GetComponent<stats>().dealDamage(damageType, gameObject);
+        if (Physics.Raycast(shootPoint.position, direction, out hit, 100, layerToIgnore) && (hit.collider.CompareTag("Player") || hit.collider.CompareTag("AI"))) hit.transform.GetComponent<Stats>().dealDamage(damageType, gameObject);
         gameObject.layer = oldLayer;
     }
 

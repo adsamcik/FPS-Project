@@ -156,7 +156,7 @@ public class Weapon : MonoBehaviour {
     protected void PickUp(Transform whom) {
         string tag = whom.tag;
         if (tag == "AI" || tag == "Player") {
-            if(tag == "AI") transform.parent = whom.Find("weapons");
+            if (tag == "AI") transform.parent = whom.Find("weapons");
             else transform.parent = whom.Find("Camera/weapons");
 
             wC = whom.GetComponent<weaponController>();

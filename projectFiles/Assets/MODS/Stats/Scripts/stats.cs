@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 
 [RequireComponent(typeof(Rigidbody))]
-public class stats : MonoBehaviour {
+public class Stats : MonoBehaviour {
     public class pStats {
         public int threatValue { get; private set; }
         public int estHealth { get; private set; }

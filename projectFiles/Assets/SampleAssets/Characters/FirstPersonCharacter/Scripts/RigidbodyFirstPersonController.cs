@@ -55,7 +55,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
 
 
         public LayerMask LedgeMask;
-        stats playerStats;
+        Stats playerStats;
 
         bool wallRunEnabled, climbing;
         public float maxWallRunLength = 1;
@@ -256,7 +256,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
         }
 
         //bool ObstacleCheck() { 
-        
+
         //}
 
         void Climb(Vector3 position) //This function is there to enable us call coroutine like normal function

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(NavMeshAgent))]
-[RequireComponent(typeof(stats))]
+[RequireComponent(typeof(Stats))]
 public class AI : MonoBehaviour {
     public bool isFriendly = false;
     public List<Threat> threats = new List<Threat>();
@@ -41,9 +41,9 @@ public class AI : MonoBehaviour {
 
     void Update() {
         activeBehavior();
-        if (threats[0].inSight && threats[0].threatValue > 600) { 
-            agent.Stop(false); 
-            activeBehavior = attack.Update; 
+        if (threats[0].inSight && threats[0].threatValue > 600) {
+            agent.Stop(false);
+            activeBehavior = attack.Update;
         }
         //Debug.Log(activeBehavior.Method);
     }
@@ -78,7 +78,7 @@ public class AI : MonoBehaviour {
 
     void OnTriggerEnter(Collider other) {
         if (!other.isTrigger && (other.CompareTag("Player") || other.CompareTag("AI"))) {
-            if (!other.GetComponent<stats>()) { Debug.LogError("Object does not contain required component PlayerStats! Aborting."); return; }
+            if (!other.GetComponent<Stats>()) { Debug.LogError("Object does not contain required component PlayerStats! Aborting."); return; }
             foreach (Threat go in threats) if (go.gameObject == other.gameObject) return;
             threats.Add(new Threat(other.gameObject, isFriendly, gameObject));
         }
@@ -302,14 +302,14 @@ public class AI : MonoBehaviour {
         public Vector3 lastSeenWhere { get; private set; }
         public Vector3 lastSeenVelocity { get; private set; }
         public float lastSeenTime { get; private set; }
-        stats s;
+        Stats s;
 
         public Threat(GameObject gameObject, bool isFriendly, GameObject me) {
             if (gameObject.CompareTag("Player")) isEnemy = (isFriendly) ? false : true;
             else isEnemy = (gameObject.GetComponent<AI>().isFriendly == isFriendly) ? false : true;
             this.gameObject = gameObject;
             this.transform = gameObject.transform;
-            s = gameObject.GetComponent<stats>();
+            s = gameObject.GetComponent<Stats>();
             this.me = me;
             meAi = me.GetComponent<AI>();
             CheckSight();
