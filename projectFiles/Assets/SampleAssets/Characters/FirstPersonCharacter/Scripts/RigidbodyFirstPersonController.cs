@@ -90,7 +90,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
 
         private void Start() {
             if (!Application.isEditor) {
-                Screen.showCursor = true;
+                Cursor.visible = true;
                 Screen.lockCursor = true;
             }
             RigidBody = GetComponent<Rigidbody>();
@@ -271,7 +271,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
             Vector3 origpos = transform.position;
             Vector3 finalpos = new Vector3(transform.position.x, position.y, transform.position.z);
             float multiplier = finalpos.y - origpos.y;
-            rigidbody.isKinematic = true;
+            GetComponent<Rigidbody>().isKinematic = true;
             //yield return new WaitForSeconds(0.2f);
             if (multiplier > 0.4f) {
                 for (float t = 0f; t < 1; t += (Time.deltaTime * 2) / multiplier) {
@@ -287,7 +287,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
                 yield return new WaitForEndOfFrame();
             }
 
-            rigidbody.isKinematic = false;
+            GetComponent<Rigidbody>().isKinematic = false;
             climbing = false;
             Capsule.enabled = true;
         }
@@ -297,10 +297,10 @@ namespace UnitySampleAssets.Characters.FirstPerson {
         }
 
         void wallRunCheck() {
-            if (rigidbody.velocity.sqrMagnitude < 25 || !wallRunSide()) { DisableWallRun(); return; }
+            if (GetComponent<Rigidbody>().velocity.sqrMagnitude < 25 || !wallRunSide()) { DisableWallRun(); return; }
             else wallRunLength += Time.fixedDeltaTime;
 
-            rigidbody.velocity = new Vector3(rigidbody.velocity.x * (maxWallRunLength - wallRunLength / 30), maxWallRunLength * 2 - wallRunLength, rigidbody.velocity.z * (maxWallRunLength - wallRunLength / 30));
+            GetComponent<Rigidbody>().velocity = new Vector3(GetComponent<Rigidbody>().velocity.x * (maxWallRunLength - wallRunLength / 30), maxWallRunLength * 2 - wallRunLength, GetComponent<Rigidbody>().velocity.z * (maxWallRunLength - wallRunLength / 30));
         }
 
         void wallCheck() {
@@ -309,7 +309,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
                 wallRun = wallRunCheck;
                 wallRunSide = wallRightCast;
 
-                rigidbody.useGravity = false;
+                GetComponent<Rigidbody>().useGravity = false;
                 rotateCamera(10);
             }
             else if (wallLeftCast()) //Check if there is wall in reach on the left side
@@ -317,7 +317,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
                 wallRun = wallRunCheck;
                 wallRunSide = wallLeftCast;
 
-                rigidbody.useGravity = false;
+                GetComponent<Rigidbody>().useGravity = false;
                 rotateCamera(-10);
             }
         }
@@ -335,7 +335,7 @@ namespace UnitySampleAssets.Characters.FirstPerson {
 
         void DisableWallRun() {
             wallRun = wallCheck;
-            rigidbody.useGravity = true;
+            GetComponent<Rigidbody>().useGravity = true;
             wallRunLength = 0;
             wallRunEnabled = false; //Wall run is disabled to ensure player won't be able to wall run until he hits the ground
             rotateCamera(0);

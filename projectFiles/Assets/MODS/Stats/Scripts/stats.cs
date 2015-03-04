@@ -154,7 +154,7 @@ public class Stats : MonoBehaviour {
         inCombat = true;
         switch ((int)dtype) {
             case 1: //Fall
-                health(-Mathf.RoundToInt(rigidbody.velocity.y * 2));
+                health(-Mathf.RoundToInt(GetComponent<Rigidbody>().velocity.y * 2));
                 break;
             case 2: //Fire
                 health(-5);
@@ -179,7 +179,7 @@ public class Stats : MonoBehaviour {
         inCombat = true;
         switch ((int)dtype) {
             case 1: //Fall
-                health(-Mathf.RoundToInt(rigidbody.velocity.y * 2));
+                health(-Mathf.RoundToInt(GetComponent<Rigidbody>().velocity.y * 2));
                 break;
             case 2: //Fire
                 health(-5);

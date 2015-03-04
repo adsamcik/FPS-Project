@@ -14,25 +14,25 @@ public class Checkpoint : MonoBehaviour {
     bool slow;
 
     void Start() {
-        collider.enabled = false;
+        GetComponent<Collider>().enabled = false;
         RespawnLocation = transform.Find("Respawn").position;
-        if (particleSystem) particleSystem.enableEmission = false;
-        if (light) { maxLight = light.intensity; light.intensity= 0; }
+        if (GetComponent<ParticleSystem>()) GetComponent<ParticleSystem>().enableEmission = false;
+        if (GetComponent<Light>()) { maxLight = GetComponent<Light>().intensity; GetComponent<Light>().intensity= 0; }
     }
 
     public void Activate()
     {
         StartCoroutine("FadeLight");
-        if (particleSystem) particleSystem.enableEmission = true;
-        collider.enabled = true;
+        if (GetComponent<ParticleSystem>()) GetComponent<ParticleSystem>().enableEmission = true;
+        GetComponent<Collider>().enabled = true;
     }
 
     void OnTriggerEnter(Collider other) {
         if (other.tag == "Player")
         {
             transform.parent.GetComponent<CheckpointSystem>().CrossedCheckpoint();
-            collider.enabled = false;
-            if (particleSystem) particleSystem.enableEmission = false;
+            GetComponent<Collider>().enabled = false;
+            if (GetComponent<ParticleSystem>()) GetComponent<ParticleSystem>().enableEmission = false;
             StartCoroutine("FadeLight");
             StartCoroutine("ParticleAnimation",other.gameObject);
         }
@@ -43,23 +43,23 @@ public class Checkpoint : MonoBehaviour {
 
     IEnumerator FadeLight()
     {
-        if (light != null)
+        if (GetComponent<Light>() != null)
         {
-            if (maxLight == light.intensity)
+            if (maxLight == GetComponent<Light>().intensity)
             {
-                while (light.intensity != 0)
+                while (GetComponent<Light>().intensity != 0)
                 {
-                    light.intensity -= maxLight * (Time.deltaTime / particleSystem.startLifetime*2);
-                    if (light.intensity < 0) light.intensity = 0;
+                    GetComponent<Light>().intensity -= maxLight * (Time.deltaTime / GetComponent<ParticleSystem>().startLifetime*2);
+                    if (GetComponent<Light>().intensity < 0) GetComponent<Light>().intensity = 0;
                     yield return new WaitForEndOfFrame();
                 }
             }
             else
             {
-                while (light.intensity != maxLight)
+                while (GetComponent<Light>().intensity != maxLight)
                 {
-                    light.intensity += maxLight * Time.deltaTime;
-                    if (light.intensity > maxLight) light.intensity = maxLight;
+                    GetComponent<Light>().intensity += maxLight * Time.deltaTime;
+                    if (GetComponent<Light>().intensity > maxLight) GetComponent<Light>().intensity = maxLight;
                     yield return new WaitForEndOfFrame();
                 }
             }
@@ -70,24 +70,24 @@ public class Checkpoint : MonoBehaviour {
     IEnumerator ParticleAnimation(GameObject target)
     {
         fade = 0;
-        ParticleList = new ParticleSystem.Particle[particleSystem.particleCount - 1];
+        ParticleList = new ParticleSystem.Particle[GetComponent<ParticleSystem>().particleCount - 1];
         while (fade != 1)
         {
-            particleSystem.GetParticles(ParticleList);
-            fade = ((fade + Time.deltaTime) > 1) ? fade = 1f : fade += Time.deltaTime/(particleSystem.startLifetime/2);
+            GetComponent<ParticleSystem>().GetParticles(ParticleList);
+            fade = ((fade + Time.deltaTime) > 1) ? fade = 1f : fade += Time.deltaTime/(GetComponent<ParticleSystem>().startLifetime/2);
             for (int i = 0; i < ParticleList.Length; ++i)
             {
                 ParticleList[i].velocity = -(new Vector3(target.transform.position.x - ParticleList[i].position.x, ParticleList[i].velocity.y, target.transform.position.z - ParticleList[i].position.z));
                 ParticleList[i].lifetime -= 2*Time.deltaTime;
             }
 
-            particleSystem.SetParticles(ParticleList, particleSystem.particleCount);
+            GetComponent<ParticleSystem>().SetParticles(ParticleList, GetComponent<ParticleSystem>().particleCount);
             yield return new WaitForEndOfFrame();
 
         }
 
         ParticleList = null;
-        particleSystem.SetParticles(ParticleList, 0);
+        GetComponent<ParticleSystem>().SetParticles(ParticleList, 0);
     }
 
 }

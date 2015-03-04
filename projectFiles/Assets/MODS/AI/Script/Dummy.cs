@@ -16,7 +16,7 @@ public class Dummy : MonoBehaviour {
         {
             new Ray(transform.position, Vector3.forward);
             GameObject b = (GameObject)Instantiate(bullet, transform.position + transform.forward, transform.rotation);
-            b.rigidbody.AddForce(transform.forward * speed);
+            b.GetComponent<Rigidbody>().AddForce(transform.forward * speed);
             yield return new WaitForSeconds(1f);
         }
     }

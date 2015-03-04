@@ -339,7 +339,7 @@ public class AI : MonoBehaviour {
                 else {
                     if (inSight) {
                         lastSeenWhere = transform.position;
-                        lastSeenVelocity = gameObject.rigidbody.velocity;
+                        lastSeenVelocity = gameObject.GetComponent<Rigidbody>().velocity;
                         lastSeenTime = Time.time;
                     }
                     inSight = false;

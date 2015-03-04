@@ -29,8 +29,8 @@ public class CheckpointSystem : MonoBehaviour {
     {
         if (CurrentCheckpoint != Checkpoints.Count)
         {
-            Checkpoints[CurrentCheckpoint].collider.enabled = false;
-            Checkpoints[CurrentCheckpoint].particleSystem.enableEmission = false;
+            Checkpoints[CurrentCheckpoint].GetComponent<Collider>().enabled = false;
+            Checkpoints[CurrentCheckpoint].GetComponent<ParticleSystem>().enableEmission = false;
         }
         CurrentCheckpoint = 0;
         Checkpoints[0].Activate();

@@ -29,14 +29,14 @@ public class RealmController : MonoBehaviour {
             if (red.Length > 0)
             {
                 PD.Add(new PhaseData());
-                PD[PD.Count - 1].SetMaterial(red[1].renderer.material);
-                for (int i = 1; i < red.Length; i++) if (red[i].collider != null) PD[PD.Count - 1].AddCollider(red[i].collider);
+                PD[PD.Count - 1].SetMaterial(red[1].GetComponent<Renderer>().material);
+                for (int i = 1; i < red.Length; i++) if (red[i].GetComponent<Collider>() != null) PD[PD.Count - 1].AddCollider(red[i].GetComponent<Collider>());
                 PhaseEnabled[0] = PD.Count - 1;
             }
         }
         else
         {
-            for (int i = 1; i < red.Length; i++) if (red[i].collider != null) red[i].collider.enabled = false;
+            for (int i = 1; i < red.Length; i++) if (red[i].GetComponent<Collider>() != null) red[i].GetComponent<Collider>().enabled = false;
             PhaseEnabled[0] = -1;
         }
 
@@ -45,14 +45,14 @@ public class RealmController : MonoBehaviour {
             if (green.Length > 0)
             {
                 PD.Add(new PhaseData());
-                PD[PD.Count - 1].SetMaterial(green[1].renderer.material);
-                for (int i = 1; i < green.Length; i++) if (green[i].collider != null) PD[PD.Count - 1].AddCollider(green[i].collider);
+                PD[PD.Count - 1].SetMaterial(green[1].GetComponent<Renderer>().material);
+                for (int i = 1; i < green.Length; i++) if (green[i].GetComponent<Collider>() != null) PD[PD.Count - 1].AddCollider(green[i].GetComponent<Collider>());
                 PhaseEnabled[1] = PD.Count - 1;
             }
         }
         else
         {
-            for (int i = 1; i < green.Length; i++) if (green[i].collider != null) green[i].collider.enabled = false;
+            for (int i = 1; i < green.Length; i++) if (green[i].GetComponent<Collider>() != null) green[i].GetComponent<Collider>().enabled = false;
             PhaseEnabled[1] = -1;
         }
 
@@ -61,14 +61,14 @@ public class RealmController : MonoBehaviour {
             if (blue.Length > 0)
             {
                 PD.Add(new PhaseData());
-                PD[PD.Count - 1].SetMaterial(blue[1].renderer.material);
-                for (int i = 1; i < blue.Length; i++) if (blue[i].collider != null) PD[PD.Count - 1].AddCollider(blue[i].collider);
+                PD[PD.Count - 1].SetMaterial(blue[1].GetComponent<Renderer>().material);
+                for (int i = 1; i < blue.Length; i++) if (blue[i].GetComponent<Collider>() != null) PD[PD.Count - 1].AddCollider(blue[i].GetComponent<Collider>());
                 PhaseEnabled[2] = PD.Count - 1;
             }
         }
         else
         {
-            for (int i = 1; i < blue.Length; i++) if (blue[i].collider != null) blue[i].collider.enabled = false;
+            for (int i = 1; i < blue.Length; i++) if (blue[i].GetComponent<Collider>() != null) blue[i].GetComponent<Collider>().enabled = false;
             PhaseEnabled[2] = - 1;
         }
 
@@ -162,7 +162,7 @@ public class RealmController : MonoBehaviour {
         }
 
         public void AddCollider(Collider collider) {
-            collider.renderer.material = material;
+            collider.GetComponent<Renderer>().material = material;
             colliders.Add(collider);
             collider.enabled = false;
         }

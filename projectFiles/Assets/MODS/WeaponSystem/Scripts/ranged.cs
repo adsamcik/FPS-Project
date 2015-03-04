@@ -70,7 +70,7 @@ public class ranged : Weapon {
     void PhysicalBulletAttack() {
         Vector3 aimTo;
         GameObject b = (GameObject)Instantiate(bullet, shootPoint.position, Quaternion.LookRotation(aimTo = wC.getAimPoint() - transform.position));
-        b.rigidbody.AddForce(aimTo.normalized * speed);
+        b.GetComponent<Rigidbody>().AddForce(aimTo.normalized * speed);
         b.GetComponent<bulletScript>().damager = gameObject;
     }
 
