@@ -42,7 +42,7 @@ public class AI : MonoBehaviour {
     void Update() {
         activeBehavior();
         if (threats[0].inSight && threats[0].threatValue > 600) {
-            agent.Stop(false);
+            agent.Stop();
             activeBehavior = attack.Update;
         }
         //Debug.Log(activeBehavior.Method);
