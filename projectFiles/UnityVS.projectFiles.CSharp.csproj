@@ -54,6 +54,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="UnityVS.projectFiles.CSharp.Plugins.csproj">
+      <Project>{069213BB-7E2D-0C7B-7B16-1D07909B5A12}</Project>
+      <Name>UnityVS.projectFiles.CSharp.Plugins</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Assets\CORE\Scripts\API.cs" />
     <Compile Include="Assets\CORE\Scripts\FPSLimiter.cs" />
     <Compile Include="Assets\CORE\Scripts\rotate.cs" />
@@ -72,96 +78,20 @@
     <Compile Include="Assets\MODS\WeaponSystem\Scripts\melee.cs" />
     <Compile Include="Assets\MODS\WeaponSystem\Scripts\ranged.cs" />
     <Compile Include="Assets\MODS\WeaponSystem\Scripts\weaponController.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\AbstractTargetFollower.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\AutoCam.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\FreeLookCam.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\HandHeldCam.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\LookatTarget.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\PivotBasedCameraRig.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\ProtectCameraFromWallClip.cs" />
-    <Compile Include="Assets\SampleAssets\Cameras\Scripts\TargetFieldOfView.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\FirstPersonCharacter\Scripts\FirstPersonController.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\FirstPersonCharacter\Scripts\HeadBob.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\FirstPersonCharacter\Scripts\MouseLook.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\FirstPersonCharacter\Scripts\RigidbodyFirstPersonController.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\ThirdPersonCharacter\Scripts\AICharacterControl.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\ThirdPersonCharacter\Scripts\ThirdPersonCharacter.cs" />
-    <Compile Include="Assets\SampleAssets\Characters\ThirdPersonCharacter\Scripts\ThirdPersonUserControl.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\AxisTouchButton.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\ButtonHandler.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\CameraSwitch.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\CrossPlatformInputManager.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\InputAxisScrollbar.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\Joystick.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\LevelReset.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\MobileControlRig.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\PlatformSpecific\MobileInput.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\PlatformSpecific\StandaloneInput.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\TiltInput.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\TouchPad.cs" />
-    <Compile Include="Assets\SampleAssets\CrossPlatformInput\Scripts\VirtualInput.cs" />
-    <Compile Include="Assets\SampleAssets\Effects\LightShafts\Scripts\LightShafts.Resources.cs" />
-    <Compile Include="Assets\SampleAssets\Effects\LightShafts\Scripts\LightShafts.Utils.cs" />
-    <Compile Include="Assets\SampleAssets\Effects\LightShafts\Scripts\LightShafts.cs" />
-    <Compile Include="Assets\SampleAssets\Environment\Water (Basic)\Scripts\WaterBasic.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\ActivateTrigger.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\AutoMobileShaderSwitch.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\AutoMoveAndRotate.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\CameraRefocus.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\CurveControlledBob.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\DragRigidbody.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\DynamicShadowSettings.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\FOVKick.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\FPSCounter.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\FollowTarget.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\ForcedReset.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\LerpControlledBob.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\ObjectResetter.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\ParticleSystemDestroyer.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\PlatformSpecificContent.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\SimpleActivatorMenu.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\SimpleMouseRotator.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\TimedObjectActivator.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\TimedObjectDestructor.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\WaypointCircuit.cs" />
-    <Compile Include="Assets\SampleAssets\Utility\WaypointProgressTracker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\MODS\Phases\readMe.txt" />
     <None Include="Assets\MODS\readMe.txt" />
     <None Include="Assets\MODS\Stats\readMe.txt" />
-    <None Include="Assets\SampleAssets\Cameras\CameraGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Characters\FirstPersonCharacter\FirstPersonCharacterGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Characters\ThirdPersonCharacter\ThirdPersonCharacterGuidelines.txt" />
-    <None Include="Assets\SampleAssets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\LightShaftsGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\ColorFilter.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\Coord.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\Depth.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\DepthBreaks.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\FinalInterpolation.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\InterpolateAlongRays.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\Raymarch.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\SamplePositions.shader" />
-    <None Include="Assets\SampleAssets\Effects\LightShafts\Shaders\Shared.cginc" />
-    <None Include="Assets\SampleAssets\Effects\ParticleSystems\ParticleSystemsGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Effects\ParticleSystems\Shaders\PriorityParticleAdd.shader" />
-    <None Include="Assets\SampleAssets\Effects\ParticleSystems\Shaders\PriorityParticleAddSoft.shader" />
-    <None Include="Assets\SampleAssets\Effects\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
-    <None Include="Assets\SampleAssets\Effects\Projectors\ProjectorGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Effects\Projectors\Shaders\ProjectorAdditive.shader" />
-    <None Include="Assets\SampleAssets\Effects\Projectors\Shaders\ProjectorLight.shader" />
-    <None Include="Assets\SampleAssets\Effects\Projectors\Shaders\ProjectorMultiply.shader" />
-    <None Include="Assets\SampleAssets\Effects\Shaders\MobileSpec.shader" />
-    <None Include="Assets\SampleAssets\Effects\TessellationShaders\Shaders\BumpedSpecularDisplacement.shader" />
-    <None Include="Assets\SampleAssets\Effects\TessellationShaders\Shaders\BumpedSpecularSmooth.shader" />
-    <None Include="Assets\SampleAssets\Effects\ToonShading\Shaders\ToonBasic.shader" />
-    <None Include="Assets\SampleAssets\Effects\ToonShading\Shaders\ToonBasicOutline.shader" />
-    <None Include="Assets\SampleAssets\Effects\ToonShading\Shaders\ToonLit.shader" />
-    <None Include="Assets\SampleAssets\Effects\ToonShading\Shaders\ToonLitOutline.shader" />
-    <None Include="Assets\SampleAssets\Environment\Skyboxes\SkyboxGuidelines.txt" />
-    <None Include="Assets\SampleAssets\Environment\Water (Basic)\Shaders\FXWaterBasic.shader" />
-    <None Include="Assets\SampleAssets\Prototyping\Shaders\WorldCoordDiffuse.shader" />
+    <None Include="Assets\Standard Assets\Characters\FirstPersonCharacter\FirstPersonCharacterGuidelines.txt" />
+    <None Include="Assets\Standard Assets\Characters\RollerBall\RollerBallGuidelines.txt" />
+    <None Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\ThirdPersonCharacterGuidelines.txt" />
+    <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
+    <None Include="Assets\Standard Assets\ParticleSystems\ParticleSystemsGuidelines.txt" />
+    <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAdd.shader" />
+    <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAddSoft.shader" />
+    <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
+    <None Include="Assets\Standard Assets\Prototyping\Shaders\WorldCoordDiffuse.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2013\UnityVS.CSharp.targets" />
 </Project>
