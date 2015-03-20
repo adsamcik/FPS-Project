@@ -110,6 +110,8 @@ public class RigidbodyFirstPersonController : MonoBehaviour {
 
     private void Update() {
 
+        if (climbing) return;
+
         RotateView();
 
         if (CrossPlatformInputManager.GetButtonDown("Jump") && !m_Jump) {
@@ -165,7 +167,7 @@ public class RigidbodyFirstPersonController : MonoBehaviour {
             }
         }
         m_Jump = false;
-
+        Debug.Log(wallRunLength);
         if ((m_Jumping || wallRunLength > 0) && wallRunEnabled) 
             wallRun();
     }
