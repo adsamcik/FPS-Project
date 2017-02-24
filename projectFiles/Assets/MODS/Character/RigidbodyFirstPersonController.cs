@@ -167,7 +167,6 @@ public class RigidbodyFirstPersonController : MonoBehaviour {
             }
         }
         m_Jump = false;
-        Debug.Log(wallRunLength);
         if ((m_Jumping || wallRunLength > 0) && wallRunEnabled) 
             wallRun();
     }

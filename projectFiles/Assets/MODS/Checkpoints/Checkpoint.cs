@@ -78,7 +78,7 @@ public class Checkpoint : MonoBehaviour {
             for (int i = 0; i < ParticleList.Length; ++i)
             {
                 ParticleList[i].velocity = -(new Vector3(target.transform.position.x - ParticleList[i].position.x, ParticleList[i].velocity.y, target.transform.position.z - ParticleList[i].position.z));
-                ParticleList[i].lifetime -= 2*Time.deltaTime;
+                ParticleList[i].remainingLifetime -= 2*Time.deltaTime;
             }
 
             GetComponent<ParticleSystem>().SetParticles(ParticleList, GetComponent<ParticleSystem>().particleCount);

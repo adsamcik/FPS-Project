@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(UnityEngine.AI.NavMeshAgent))]
 [RequireComponent(typeof(Stats))]
 public class AI : MonoBehaviour {
     public bool isFriendly = false;
@@ -11,7 +11,7 @@ public class AI : MonoBehaviour {
     [HideInInspector]
     public bool threatChanged;
 
-    NavMeshAgent agent;
+    UnityEngine.AI.NavMeshAgent agent;
 
     public delegate void BehaviorSwitch();
     BehaviorSwitch activeBehavior;
@@ -34,7 +34,7 @@ public class AI : MonoBehaviour {
 
         StartCoroutine("threatUpdate");
         canShoot = (gameObject.GetComponent<weaponController>()) ? true : false;
-        agent = GetComponent<NavMeshAgent>();
+        agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         if (patrol.enabled) activeBehavior = patrol.Update;
         else activeBehavior = Idle;
     }
@@ -178,7 +178,7 @@ public class AI : MonoBehaviour {
             ai.activeBehavior = Update;
         }
 
-        float PathLength(NavMeshPath path) {
+        float PathLength(UnityEngine.AI.NavMeshPath path) {
             if (path.corners.Length == 0) return 0;
             if (path.corners.Length < 2) return Vector3.Distance(transform.position, path.corners[0]);
 
@@ -193,14 +193,14 @@ public class AI : MonoBehaviour {
             return lengthSoFar;
         }
 
-        NavMeshPath FindSpot(Vector3 iAmHere, float distance) {
-            NavMeshPath path = new NavMeshPath();
-            NavMeshHit navPos;
+        UnityEngine.AI.NavMeshPath FindSpot(Vector3 iAmHere, float distance) {
+            UnityEngine.AI.NavMeshPath path = new UnityEngine.AI.NavMeshPath();
+            UnityEngine.AI.NavMeshHit navPos;
 
             float angle = Random.Range(0, 360);
             Vector3 position = iAmHere + new Vector3(distance * Mathf.Cos(angle), 0, distance * Mathf.Sin(angle));
             position.y = Random.Range(0, 200);
-            NavMesh.SamplePosition(position, out navPos, radius, -1);
+            UnityEngine.AI.NavMesh.SamplePosition(position, out navPos, radius, -1);
 
             if (!CheckIfBeen(navPos.position, 5f) && ai.agent.CalculatePath(navPos.position, path)) return path;
             else FindSpot(iAmHere, distance);

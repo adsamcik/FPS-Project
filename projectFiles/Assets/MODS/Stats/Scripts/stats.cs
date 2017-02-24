@@ -109,8 +109,8 @@ public class Stats : MonoBehaviour {
         publicStats = new pStats(Health, Armor);
 
         if (gameObject.CompareTag("Player")) {
-            if (enableHealth) HealthBar = GameObject.Find("--HUD/Stats/healthBar").GetComponent<Image>();
-            if (enableArmor) ArmorBar = GameObject.Find("--HUD/Stats/armorBar").GetComponent<Image>();
+            HealthBar = GameObject.Find("--HUD/Stats/healthBar").GetComponent<Image>();
+            ArmorBar = GameObject.Find("--HUD/Stats/armorBar").GetComponent<Image>();
             HealthBar.rectTransform.localScale = new Vector3((float)Health / 100, 1, 1);
             ArmorBar.rectTransform.localScale = new Vector3((float)Armor / 100, 1, 1);
             kill = playerKill;
